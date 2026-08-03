@@ -152,6 +152,11 @@ canvas { display:block; }
 .login-submit:disabled { opacity:.6; cursor:default; }
 .login-error { width:100%; font-size:12px; color:#E38C8C; background:rgba(227,140,140,.1); border:1px solid #E38C8C; border-radius:8px; padding:8px 12px; margin-bottom:16px; }
 .login-error.hidden { display:none; }
+.login-success { width:100%; font-size:12px; color:var(--accent); background:var(--accent-dim); border:1px solid var(--accent-dim); border-radius:8px; padding:8px 12px; margin-bottom:16px; }
+.login-success.hidden { display:none; }
+.login-link { width:100%; font-size:12px; color:var(--muted); background:transparent; border:none; cursor:pointer; margin-top:12px; text-decoration:underline; }
+.login-link:hover { color:var(--text); }
+.login-card.hidden { display:none; }
 .logout-btn { margin:0 12px 12px; font-size:11px; padding:8px; border-radius:8px; background:transparent; color:var(--muted); border:1px solid var(--border); cursor:pointer; transition:color .12s,border-color .12s; }
 .logout-btn:hover { color:var(--text); border-color:var(--accent-dim); }
 

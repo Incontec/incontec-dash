@@ -28,6 +28,31 @@
     <label class="login-label" for="loginPassword">Senha</label>
     <input class="login-input" id="loginPassword" type="password" autocomplete="current-password" required />
     <button class="login-submit" id="loginSubmit" type="submit">Entrar</button>
+    <button class="login-link" id="forgotLink" type="button">Esqueci minha senha</button>
+  </form>
+
+  <form class="login-card hidden" id="forgotForm">
+    <div class="logo-icon" style="margin-bottom:16px">ID</div>
+    <div class="login-title">Recuperar senha</div>
+    <div class="login-sub">Enviamos um link de redefinição para o seu email</div>
+    <div class="login-error hidden" id="forgotError"></div>
+    <div class="login-success hidden" id="forgotSuccess"></div>
+    <label class="login-label" for="forgotEmail">Email</label>
+    <input class="login-input" id="forgotEmail" type="email" autocomplete="username" required />
+    <button class="login-submit" id="forgotSubmit" type="submit">Enviar link</button>
+    <button class="login-link" id="backToLoginLink" type="button">Voltar ao login</button>
+  </form>
+
+  <form class="login-card hidden" id="resetForm">
+    <div class="logo-icon" style="margin-bottom:16px">ID</div>
+    <div class="login-title">Definir nova senha</div>
+    <div class="login-sub">Escolha uma nova senha para sua conta</div>
+    <div class="login-error hidden" id="resetError"></div>
+    <label class="login-label" for="resetPassword">Nova senha</label>
+    <input class="login-input" id="resetPassword" type="password" autocomplete="new-password" minlength="6" required />
+    <label class="login-label" for="resetPasswordConfirm">Confirmar senha</label>
+    <input class="login-input" id="resetPasswordConfirm" type="password" autocomplete="new-password" minlength="6" required />
+    <button class="login-submit" id="resetSubmit" type="submit">Salvar nova senha</button>
   </form>
 </div>
 <div class="mobile-tabs" id="mobileTabs"></div>
