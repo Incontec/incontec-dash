@@ -25,7 +25,10 @@ function gerarResposta(pergunta, state) {
 
 async function askAI(pergunta) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
+  // The n8n workflow now pulls kpis/bancos/fluxo/inadimplência in parallel
+  // before calling Claude, which can take ~10-15s — 15s was cutting it too
+  // close and aborting requests that were actually about to succeed.
+  const timeout = setTimeout(() => controller.abort(), 30000);
   try {
     const res = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
