@@ -139,6 +139,22 @@ canvas { display:block; }
 .retry-btn { margin-top:4px; font-size:12px; padding:8px 16px; border-radius:8px; background:var(--accent-dim); color:var(--accent); border:1px solid var(--border); cursor:pointer; }
 .error-banner { background:rgba(227,140,140,.1); border:1px solid #E38C8C; border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:12px; font-size:13px; line-height:1.6; color:#E38C8C; }
 
+/* Login */
+.login-screen { position:fixed; inset:0; background:var(--bg); display:flex; align-items:center; justify-content:center; z-index:110; }
+.login-screen.hidden { display:none; }
+.login-card { width:320px; display:flex; flex-direction:column; align-items:center; text-align:center; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:32px 28px; }
+.login-title { font-size:15px; font-weight:600; letter-spacing:-0.3px; }
+.login-sub { font-size:12px; color:var(--muted); margin-top:4px; margin-bottom:20px; }
+.login-label { align-self:flex-start; font-size:11px; color:var(--muted); margin-bottom:6px; }
+.login-input { width:100%; font-size:13px; padding:10px 12px; border-radius:8px; background:var(--surface2); color:var(--text); border:1px solid var(--border); outline:none; font-family:'Inter',sans-serif; margin-bottom:16px; }
+.login-input:focus { border-color:var(--accent); }
+.login-submit { width:100%; font-size:13px; font-weight:600; padding:10px; border-radius:8px; background:var(--accent); color:#06140C; border:none; cursor:pointer; margin-top:4px; }
+.login-submit:disabled { opacity:.6; cursor:default; }
+.login-error { width:100%; font-size:12px; color:#E38C8C; background:rgba(227,140,140,.1); border:1px solid #E38C8C; border-radius:8px; padding:8px 12px; margin-bottom:16px; }
+.login-error.hidden { display:none; }
+.logout-btn { margin:0 12px 12px; font-size:11px; padding:8px; border-radius:8px; background:transparent; color:var(--muted); border:1px solid var(--border); cursor:pointer; transition:color .12s,border-color .12s; }
+.logout-btn:hover { color:var(--text); border-color:var(--accent-dim); }
+
 /* Table controls: search, filter chips, pagination, sortable headers */
 .table-controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
 .table-search { font-size:12px; padding:8px 12px; border-radius:8px; background:var(--surface2); color:var(--text); border:1px solid var(--border); outline:none; font-family:'Inter',sans-serif; min-width:220px; }

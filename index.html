@@ -17,6 +17,19 @@
   <div class="spinner"></div>
   <div id="loadingText">Carregando dados do Supabase…</div>
 </div>
+<div class="login-screen hidden" id="loginScreen">
+  <form class="login-card" id="loginForm">
+    <div class="logo-icon" style="margin-bottom:16px">ID</div>
+    <div class="login-title">INCONTEC DASH</div>
+    <div class="login-sub">Entre com sua conta para continuar</div>
+    <div class="login-error hidden" id="loginError"></div>
+    <label class="login-label" for="loginEmail">Email</label>
+    <input class="login-input" id="loginEmail" type="email" autocomplete="username" required />
+    <label class="login-label" for="loginPassword">Senha</label>
+    <input class="login-input" id="loginPassword" type="password" autocomplete="current-password" required />
+    <button class="login-submit" id="loginSubmit" type="submit">Entrar</button>
+  </form>
+</div>
 <div class="mobile-tabs" id="mobileTabs"></div>
 <div class="app">
   <aside class="sidebar">
@@ -30,6 +43,7 @@
       Conectado ao ERP UAU via n8n
       <div class="sync-row"><span class="sync-dot"></span><span class="sync-label">Sincronizado agora</span></div>
     </div>
+    <button class="logout-btn" id="logoutBtn" type="button">Sair</button>
   </aside>
   <main>
     <div class="topbar">
@@ -210,6 +224,7 @@
 <script src="js/icons.js"></script>
 <script src="js/config.js"></script>
 <script src="js/supabase-client.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/derive.js"></script>
 <script src="js/charts.js"></script>
 <script src="js/tables.js"></script>

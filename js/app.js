@@ -76,6 +76,12 @@ function showLoadError(err) {
   `;
 }
 
+async function startApp() {
+  renderNavShell();
+  setActive(activeLabel);
+  loadAndRender().catch(showLoadError);
+}
+
 async function loadAndRender() {
   const [kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra] = await Promise.all([
     getKpis(), getBancos(), getFluxoCaixa(), getFluxoMensal(), getRecebiveis(), getVendasObra(),
@@ -112,6 +118,4 @@ async function loadAndRender() {
   document.getElementById('loadingOverlay').classList.add('hidden');
 }
 
-renderNavShell();
-setActive(activeLabel);
-loadAndRender().catch(showLoadError);
+requireAuth();
