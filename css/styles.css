@@ -33,6 +33,8 @@ main { flex:1;display:flex;flex-direction:column;min-width:0; }
 .topbar-update { text-align:right; }
 .topbar-update-label { font-size:11px;color:var(--muted); }
 .topbar-update-value { font-size:12px;font-weight:500;color:var(--accent); }
+.period-select { font-size:12px;font-weight:500;padding:4px 8px;border-radius:6px;background:var(--surface2);color:var(--text);border:1px solid var(--border);outline:none;font-family:'Inter',sans-serif;cursor:pointer; }
+.period-select:focus { border-color:var(--accent); }
 .content { padding:24px;display:flex;flex-direction:column;gap:20px;overflow-y:auto;flex:1; }
 
 /* Pages */

@@ -76,9 +76,20 @@
         <div class="topbar-title" id="pageTitle">Dashboard</div>
         <div class="topbar-sub" id="pageSubtitle">Visão consolidada de bancos e contas</div>
       </div>
-      <div class="topbar-update">
-        <div class="topbar-update-label">Última atualização</div>
-        <div class="topbar-update-value" id="lastUpdated">—</div>
+      <div style="display:flex;align-items:center;gap:20px">
+        <div>
+          <div class="topbar-update-label">Período</div>
+          <select class="period-select" id="periodFilter">
+            <option value="">Tudo</option>
+            <option value="year">Este ano</option>
+            <option value="12m">Últimos 12 meses</option>
+            <option value="month">Este mês</option>
+          </select>
+        </div>
+        <div class="topbar-update">
+          <div class="topbar-update-label">Última atualização</div>
+          <div class="topbar-update-value" id="lastUpdated">—</div>
+        </div>
       </div>
     </div>
     <div class="content">

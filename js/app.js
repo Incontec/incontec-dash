@@ -82,17 +82,29 @@ async function startApp() {
   loadAndRender().catch(showLoadError);
 }
 
-async function loadAndRender() {
-  const [kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra] = await Promise.all([
-    getKpis(), getBancos(), getFluxoCaixa(), getFluxoMensal(), getRecebiveis(), getVendasObra(),
-  ]);
+// Full, unfiltered datasets fetched once — the period filter slices these
+// client-side rather than re-querying Supabase on every change.
+let rawData = null;
 
-  const bancoStats = computeBancoStats(bancos);
-  const receberSummary = computeReceberSummary(recebiveis);
-  const pmr = computePMR(recebiveis);
+function buildState(periodKey) {
+  const range = getPeriodRange(periodKey);
+  const { bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, bancoStats } = rawData;
 
-  const state = { kpis, bancos, bancoStats, fluxoCaixa, fluxoMensal, receber: { rows: recebiveis, summary: receberSummary }, pmr, vendasObra };
+  const fluxoCaixaFiltered = fluxoCaixa.filter(r => inPeriod(r.Data, range));
+  const recebiveisFiltered = recebiveis.filter(r => inPeriod(r["Data Venda"], range));
+  const kpis = computeKpisFiltered(resumoVendasRaw, fluxoCaixa, bancoStats.saldoTotal, range);
+  const receberSummary = computeReceberSummary(recebiveisFiltered);
+  const pmr = computePMR(recebiveisFiltered);
 
+  return {
+    kpis, bancos, bancoStats,
+    fluxoCaixa: fluxoCaixaFiltered, fluxoMensal,
+    receber: { rows: recebiveisFiltered, summary: receberSummary },
+    pmr, vendasObra,
+  };
+}
+
+function renderAll(state) {
   renderBanner(state);
   renderDashboardCards(state);
   renderFluxoPage(state);
@@ -113,6 +125,23 @@ async function loadAndRender() {
   setupAI(state, 'messages',  'quickBtns',  'aiInput',  'sendBtn');
   setupAI(state, 'messages2', 'quickBtns2', 'aiInput2', 'sendBtn2');
   setupExports(state);
+}
+
+function setupPeriodFilter() {
+  document.getElementById('periodFilter').addEventListener('change', e => {
+    renderAll(buildState(e.target.value));
+  });
+}
+
+async function loadAndRender() {
+  const [kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw] = await Promise.all([
+    getKpis(), getBancos(), getFluxoCaixa(), getFluxoMensal(), getRecebiveis(), getVendasObra(), getResumoVendasRaw(),
+  ]);
+
+  rawData = { kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, bancoStats: computeBancoStats(bancos) };
+
+  setupPeriodFilter();
+  renderAll(buildState(document.getElementById('periodFilter').value));
 
   setLastUpdated(new Date());
   document.getElementById('loadingOverlay').classList.add('hidden');

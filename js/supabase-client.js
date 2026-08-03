@@ -33,3 +33,9 @@ async function getVendasObra() {
   const rows = await fetchView("vw_vendas_obra");
   return rows.sort((a, b) => b.valor_vendido - a.valor_vendido);
 }
+
+// Raw (per-sale) rows with their own date, used for the period filter —
+// vw_kpis is a single pre-aggregated row with no date to filter by.
+async function getResumoVendasRaw() {
+  return fetchView("resumo_vendas", '"Data Venda","Valor Venda","Valor Recebido","Total a Receber"');
+}

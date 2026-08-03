@@ -26,17 +26,17 @@ function renderBanner(state) {
     : 'Nenhum risco crítico identificado.';
   document.getElementById('banner').innerHTML = `
     <span style="color:var(--accent);flex-shrink:0;margin-top:2px;width:18px;height:18px">${I.trending}</span>
-    <span><span class="hi">Resumo executivo:</span> saldo consolidado de <span class="val">${fmtBRL(kpis.saldo_bancos)}</span>.
+    <span><span class="hi">Resumo executivo:</span> saldo consolidado de <span class="val">${fmtBRLSigned(kpis.saldo_bancos)}</span>.
     ${bancoStats.bancoLider ? `${bancoStats.bancoLider.Descri_banco} concentra <span class="val">${bancoStats.concentracao}%</span> dos recursos.` : ''} ${warnHtml}</span>`;
 }
 
 function renderDashboardCards(state) {
   const { kpis, bancoStats } = state;
   renderMetricCards(document.getElementById('cards'), [
-    { label:"Saldo Consolidado", value:fmtBRL(kpis.saldo_bancos), ik:"wallet" },
+    { label:"Saldo Consolidado", value:fmtBRLSigned(kpis.saldo_bancos), ik:"wallet" },
     { label:"Qtd. de Bancos",    value:bancoStats.qtdBancos,       ik:"landmark" },
-    { label:"Total Vendido",     value:fmtBRL(kpis.valor_vendido), ik:"bar" },
-    { label:"Total a Receber",   value:fmtBRL(kpis.total_receber), ik:"gauge" },
+    { label:"Total Vendido",     value:fmtBRLSigned(kpis.valor_vendido), ik:"bar" },
+    { label:"Total a Receber",   value:fmtBRLSigned(kpis.total_receber), ik:"gauge" },
     { label:"Banco Líder",       value:bancoStats.bancoLider ? bancoStats.bancoLider.Descri_banco : "—", ik:"trending", trend:bancoStats.concentracao },
   ]);
 }
@@ -46,7 +46,7 @@ function renderReceberBanner(state) {
   const { summary } = state.receber;
   document.getElementById('banner-receber').innerHTML = `
     <span style="color:var(--accent);flex-shrink:0;margin-top:2px;width:18px;height:18px">${I.arrowDown}</span>
-    <span><span class="hi">Contas a Receber:</span> Total em aberto de <span class="val">${fmtBRL(summary.totalAberto)}</span>.
+    <span><span class="hi">Contas a Receber:</span> Total em aberto de <span class="val">${fmtBRLSigned(summary.totalAberto)}</span>.
     <span class="warn">${summary.vencidosCount} título${summary.vencidosCount===1?'':'s'} vencido${summary.vencidosCount===1?'':'s'}</span> aguardando cobrança.</span>`;
 }
 
@@ -65,7 +65,7 @@ function renderReceberTable(rows) {
 
 function renderReceberSummaryCards(state) {
   const s = state.receber.summary;
-  document.getElementById('rec-total-valor').textContent = fmtBRL(s.totalAberto);
+  document.getElementById('rec-total-valor').innerHTML = fmtBRLSigned(s.totalAberto);
   document.getElementById('rec-total-sub').textContent = `${s.vencidosCount} título${s.vencidosCount===1?'':'s'} vencido${s.vencidosCount===1?'':'s'}`;
   document.getElementById('rec-clientes-valor').textContent = s.clientesUnicos;
   document.getElementById('rec-clientes-sub').textContent = `cliente${s.clientesUnicos===1?'':'s'} inadimplente${s.clientesUnicos===1?'':'s'}`;
@@ -92,7 +92,7 @@ function renderFluxoPage(state) {
 
   document.getElementById('banner-fluxo').innerHTML = `
     <span style="color:var(--accent);flex-shrink:0;margin-top:2px;width:18px;height:18px">${I.wallet}</span>
-    <span><span class="hi">Fluxo de Caixa:</span> saldo atual de <span class="val">${fmtBRL(fluxoCaixa.length ? fluxoCaixa[fluxoCaixa.length-1].saldo_atual : 0)}</span> ao longo de ${dias} dias com dados.</span>`;
+    <span><span class="hi">Fluxo de Caixa:</span> saldo atual de <span class="val">${fmtBRLSigned(fluxoCaixa.length ? fluxoCaixa[fluxoCaixa.length-1].saldo_atual : 0)}</span> ao longo de ${dias} dias com dados.</span>`;
 
   document.getElementById('fluxo-entradas-total').textContent = fmtBRL(totalEntradas);
   document.getElementById('fluxo-entradas-media').textContent = fmtBRL(dias ? totalEntradas/dias : 0);
@@ -107,10 +107,10 @@ function renderFluxoPage(state) {
 function renderBancosCards(state) {
   const { bancoStats } = state;
   renderMetricCards(document.getElementById('banco-cards'), [
-    { label:"Saldo Total",         value:fmtBRL(bancoStats.saldoTotal),   ik:"wallet" },
+    { label:"Saldo Total",         value:fmtBRLSigned(bancoStats.saldoTotal),   ik:"wallet" },
     { label:"Qtd. Bancos",         value:bancoStats.qtdBancos,             ik:"landmark" },
     { label:"Banco Líder",         value:bancoStats.bancoLider ? bancoStats.bancoLider.Descri_banco : "—", ik:"trending", trend:bancoStats.concentracao },
-    { label:"Média por Banco",     value:fmtBRL(bancoStats.mediaPorBanco), ik:"gauge" },
+    { label:"Média por Banco",     value:fmtBRLSigned(bancoStats.mediaPorBanco), ik:"gauge" },
     { label:"Menor Saldo",         value:bancoStats.bancoMenor ? bancoStats.bancoMenor.Descri_banco : "—", ik:"bar" },
   ]);
 }
@@ -124,7 +124,7 @@ function renderBancosTable(bancos, bancoStats) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><span class="banco-dot" style="background:${cor}"></span>${b.Descri_banco}</td>
-      <td style="font-weight:500;color:var(--accent)">${fmtBRL(b.saldo)}</td>
+      <td style="font-weight:500;color:var(--accent)">${fmtBRLSigned(b.saldo)}</td>
       <td style="min-width:120px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">${pct}%</div>
         <div class="prog-bar"><div class="prog-fill" style="width:${Math.max(pct,0)}%;background:${cor}"></div></div></td>`;
     bancosTbody.appendChild(tr);

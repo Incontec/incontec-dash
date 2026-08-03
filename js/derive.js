@@ -112,3 +112,39 @@ function fmtDateBR(isoDate) {
   const [y, m, d] = isoDate.split("-");
   return `${d}/${m}`;
 }
+
+// ── Period filter ("Tudo" vs. a date range) ────────────
+// Bank balances (saldo_bancos, the Bancos page) are a snapshot, not a flow
+// over time, so they're intentionally never filtered by period — only the
+// activity data (sales, receivables, fluxo de caixa) responds to it.
+function getPeriodRange(key) {
+  const now = new Date();
+  if (key === "month") return { from: new Date(now.getFullYear(), now.getMonth(), 1), to: now };
+  if (key === "year") return { from: new Date(now.getFullYear(), 0, 1), to: now };
+  if (key === "12m") {
+    const from = new Date(now);
+    from.setFullYear(from.getFullYear() - 1);
+    return { from, to: now };
+  }
+  return null; // "Tudo"
+}
+
+function inPeriod(dateStr, range) {
+  if (!range) return true;
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  return d >= range.from && d <= range.to;
+}
+
+function computeKpisFiltered(resumoVendasRaw, fluxoCaixaRows, saldoBancos, range) {
+  const vendas = resumoVendasRaw.filter(r => inPeriod(r["Data Venda"], range));
+  const fluxo = fluxoCaixaRows.filter(r => inPeriod(r.Data, range));
+  return {
+    total_vendas: vendas.length,
+    valor_vendido: vendas.reduce((s, r) => s + (r["Valor Venda"] || 0), 0),
+    valor_recebido: vendas.reduce((s, r) => s + (r["Valor Recebido"] || 0), 0),
+    total_receber: vendas.reduce((s, r) => s + (r["Total a Receber"] || 0), 0),
+    saldo_bancos: saldoBancos,
+    total_fluxo: fluxo.length,
+  };
+}
