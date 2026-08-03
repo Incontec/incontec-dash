@@ -8,3 +8,8 @@ const fmtK = v => `${(v / 1e3).toFixed(0)}k`;
 // value can legitimately go negative (balances, saldo atual) and that
 // shouldn't be visually indistinguishable from a normal positive amount.
 const fmtBRLSigned = v => (v < 0 ? `<span style="color:#E38C8C">${fmtBRL(v)}</span>` : fmtBRL(v));
+
+// Always red, regardless of sign — for amounts that are inherently a
+// receivable/overdue (money not yet in hand), where the color signals
+// "still owed to you" rather than "this happens to be negative".
+const fmtBRLRed = v => `<span style="color:#E38C8C">${fmtBRL(v)}</span>`;

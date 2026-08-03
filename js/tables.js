@@ -36,7 +36,7 @@ function renderDashboardCards(state) {
     { label:"Saldo Consolidado", value:fmtBRLSigned(kpis.saldo_bancos), ik:"wallet" },
     { label:"Qtd. de Bancos",    value:bancoStats.qtdBancos,       ik:"landmark" },
     { label:"Total Vendido",     value:fmtBRLSigned(kpis.valor_vendido), ik:"bar" },
-    { label:"Total a Receber",   value:fmtBRLSigned(kpis.total_receber), ik:"gauge" },
+    { label:"Total a Receber",   value:fmtBRLRed(kpis.total_receber), ik:"gauge" },
     { label:"Banco Líder",       value:bancoStats.bancoLider ? bancoStats.bancoLider.Descri_banco : "—", ik:"trending", trend:bancoStats.concentracao },
   ]);
 }
@@ -46,7 +46,7 @@ function renderReceberBanner(state) {
   const { summary } = state.receber;
   document.getElementById('banner-receber').innerHTML = `
     <span style="color:var(--accent);flex-shrink:0;margin-top:2px;width:18px;height:18px">${I.arrowDown}</span>
-    <span><span class="hi">Contas a Receber:</span> Total em aberto de <span class="val">${fmtBRLSigned(summary.totalAberto)}</span>.
+    <span><span class="hi">Contas a Receber:</span> Total em aberto de <span class="val">${fmtBRLRed(summary.totalAberto)}</span>.
     <span class="warn">${summary.vencidosCount} título${summary.vencidosCount===1?'':'s'} vencido${summary.vencidosCount===1?'':'s'}</span> aguardando cobrança.</span>`;
 }
 
@@ -57,7 +57,7 @@ function renderReceberTable(rows) {
   rows.forEach(r => {
     const status = statusFromRecebivel(r);
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r.Cliente}</td><td style="color:var(--muted)">${r.Obra}</td><td style="color:var(--muted)">${r["Data Venda"] || '—'}</td><td style="font-weight:500;color:var(--accent)">${fmtBRL(r["Total a Receber"] || 0)}</td>
+    tr.innerHTML = `<td>${r.Cliente}</td><td style="color:var(--muted)">${r.Obra}</td><td style="color:var(--muted)">${r["Data Venda"] || '—'}</td><td style="font-weight:500;color:#E38C8C">${fmtBRL(r["Total a Receber"] || 0)}</td>
       <td><span style="font-size:11px;padding:2px 8px;border-radius:4px;background:${statusColor(status)}22;color:${statusColor(status)}">${status}</span></td>`;
     recTbody.appendChild(tr);
   });
