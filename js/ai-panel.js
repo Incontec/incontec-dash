@@ -23,6 +23,50 @@ function gerarResposta(pergunta, state) {
   return `Não foi possível localizar essa informação nos dados disponíveis no momento.`;
 }
 
+// Claude's answers come back as Markdown (headers, bold, lists) — render
+// them properly instead of dumping raw "**"/"#" characters into the chat.
+// User messages never go through this (kept as plain textContent) since
+// they're just echoed input, not content we need to format.
+function mdToHtml(text) {
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const inline = s => esc(s)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`(.+?)`/g, '<code>$1</code>');
+
+  const lines = text.split('\n');
+  let html = '';
+  let listType = null; // 'ul' | 'ol' | null
+
+  const closeList = () => { if (listType) { html += `</${listType}>`; listType = null; } };
+
+  lines.forEach(raw => {
+    const line = raw.trim();
+    if (!line) { closeList(); return; }
+
+    const h = line.match(/^(#{1,4})\s+(.*)/);
+    if (h) { closeList(); html += `<h4>${inline(h[2])}</h4>`; return; }
+
+    const ul = line.match(/^[-*]\s+(.*)/);
+    if (ul) {
+      if (listType !== 'ul') { closeList(); html += '<ul>'; listType = 'ul'; }
+      html += `<li>${inline(ul[1])}</li>`;
+      return;
+    }
+
+    const ol = line.match(/^\d+[.)]\s+(.*)/);
+    if (ol) {
+      if (listType !== 'ol') { closeList(); html += '<ol>'; listType = 'ol'; }
+      html += `<li>${inline(ol[1])}</li>`;
+      return;
+    }
+
+    closeList();
+    html += `<p>${inline(line)}</p>`;
+  });
+  closeList();
+  return html;
+}
+
 async function askAI(pergunta) {
   const controller = new AbortController();
   // The n8n workflow now pulls kpis/bancos/fluxo/inadimplência in parallel
@@ -57,7 +101,8 @@ function setupAI(state, messagesId, quickId, inputId, sendId) {
     msgs.forEach(m => {
       const d = document.createElement('div');
       d.className = `message ${m.role}` + (m.pending ? ' pending' : '');
-      d.textContent = m.text;
+      if (m.role === 'ai' && !m.pending) d.innerHTML = mdToHtml(m.text);
+      else d.textContent = m.text;
       msgsEl.appendChild(d);
     });
     msgsEl.scrollTop = msgsEl.scrollHeight;

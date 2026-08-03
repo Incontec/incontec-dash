@@ -106,11 +106,19 @@ canvas { display:block; }
 .ai-icon svg { width:14px;height:14px; }
 .ai-title { font-size:13px;font-weight:500; }
 .ai-badge { margin-left:auto;font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(111,227,166,.1);color:var(--accent); }
-.messages { flex:1;display:flex;flex-direction:column;gap:8px;max-height:224px;overflow-y:auto;margin-bottom:12px;padding-right:4px; }
+.messages { flex:1;display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;margin-bottom:12px;padding-right:4px; }
 .message { font-size:12px;line-height:1.6;padding:8px 12px;border-radius:8px; }
 .message.ai { background:var(--surface2); }
 .message.user { background:var(--accent-dim);margin-left:20%; }
 .message.pending { color:var(--muted); font-style:italic; }
+.message.ai p { margin:0 0 8px; }
+.message.ai p:last-child { margin-bottom:0; }
+.message.ai h4 { font-size:13px;font-weight:600;margin:12px 0 6px;color:var(--text); }
+.message.ai h4:first-child { margin-top:0; }
+.message.ai ul, .message.ai ol { margin:0 0 8px;padding-left:18px; }
+.message.ai li { margin-bottom:3px; }
+.message.ai strong { color:var(--text);font-weight:600; }
+.message.ai code { background:var(--surface);padding:1px 5px;border-radius:4px;font-size:11px;font-family:monospace; }
 .quick-btns { display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px; }
 .quick-btn { font-size:10.5px;padding:4px 8px;border-radius:20px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);cursor:pointer;transition:color .12s,background .12s; }
 .quick-btn:hover { color:var(--text);background:var(--accent-dim); }
