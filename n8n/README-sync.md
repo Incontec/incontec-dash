@@ -24,17 +24,28 @@ dele, não o da Incontec.
 
 ## Cabeçalho X-INTEGRATION-Authorization
 
-Os nós BUSCAR FLUXO / BUSCAR SALDO CONTAS / BUSCAR RESUMO VENDAS reusam o
-token de sessão do login (`{{ $('LOGIN UAU*').first().json.data }}`) tanto no
-header `Authorization` quanto no `X-INTEGRATION-Authorization`. Esse segundo
-header estava fixo (JWT expirado, hardcoded) e foi corrigido para usar a
-mesma expressão dinâmica.
+Os nós BUSCAR FLUXO / BUSCAR SALDO CONTAS / BUSCAR RESUMO VENDAS têm dois
+headers de autenticação distintos:
 
-**BUSCAR FLUXO ainda falha** com `401 - Token de integração inválido!` mesmo
-com o token correto — parece ser uma permissão específica do usuário do
-LOGIN UAU1 no ERP, não um problema de configuração do n8n. Precisa confirmar
-com o suporte do UAU/SeniorCloud se esse usuário tem acesso à consulta de
-fluxo de caixa.
+- `Authorization` — token de sessão, dinâmico, `{{ $('LOGIN UAU*').first().json.data }}`
+- `X-INTEGRATION-Authorization` — **token de integração, fixo** (não é o
+  mesmo token de sessão). Estava com um valor antigo/expirado, causando
+  `401 - Token de integração inválido!` só no BUSCAR FLUXO. Corrigido com o
+  valor correto direto no n8n.
+
+Não confundir os dois — só o `Authorization` deve reusar o login dinâmico.
+
+## Volume de dados do BUSCAR FLUXO
+
+`fluxo_caixa` recebe o histórico completo do ERP (sem filtro de período) —
+isso é intencional, não um bug. Isso significa ~17-18 mil linhas por
+sincronização completa.
+
+Por causa desse volume, o node **Loop Over Items4** (que agrupa os inserts
+em lotes antes de mandar pro Supabase) teve o **Batch Size reduzido de 100
+para 25** — com 100, a execução chegou a crashar depois de ~2 minutos
+processando os ~178 lotes. Se voltar a crashar, vale tentar um valor ainda
+menor (10-15) ou investigar limites de memória/timeout do n8n.
 
 ## Retry
 
