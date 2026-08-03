@@ -121,9 +121,10 @@ function getPeriodRange(key) {
   const now = new Date();
   if (key === "month") return { from: new Date(now.getFullYear(), now.getMonth(), 1), to: now };
   if (key === "year") return { from: new Date(now.getFullYear(), 0, 1), to: now };
-  if (key === "12m") {
+  if (key === "12m" || key === "6m" || key === "3m") {
+    const months = { "12m": 12, "6m": 6, "3m": 3 }[key];
     const from = new Date(now);
-    from.setFullYear(from.getFullYear() - 1);
+    from.setMonth(from.getMonth() - months);
     return { from, to: now };
   }
   return null; // "Tudo"
