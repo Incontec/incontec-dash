@@ -198,6 +198,7 @@ async function loadAndRender() {
   setupPeriodPicker();
   setupCustomReport();
   setupSettingsPage();
+  setupAlertRecipients();
   renderAll(buildState(currentPeriod));
 
   setLastUpdated(new Date());

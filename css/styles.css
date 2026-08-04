@@ -252,6 +252,9 @@ canvas { display:block; }
 .color-input { width:52px;height:52px;border:1px solid var(--border);border-radius:10px;background:transparent;cursor:pointer;padding:3px; }
 .color-input::-webkit-color-swatch-wrapper { padding:0; }
 .color-input::-webkit-color-swatch { border:none;border-radius:7px; }
+.alert-recipient-row { display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px; }
+.alert-recipient-name { font-size:13px;font-weight:500; }
+.alert-recipient-meta { font-size:11px;color:var(--muted);margin-top:2px; }
 
 /* Table controls: search, filter chips, pagination, sortable headers */
 .table-controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
