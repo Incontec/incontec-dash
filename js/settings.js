@@ -3,6 +3,7 @@
 // preference, not app data, so it doesn't need a table/RLS round-trip.
 const THEME_KEY = 'incontec_theme';
 const DEFAULT_ACCENT = '#6fe3a6';
+const DEFAULT_NAME = 'INCONTEC DASH';
 
 function loadTheme() {
   try { return JSON.parse(localStorage.getItem(THEME_KEY)) || {}; } catch { return {}; }
@@ -51,15 +52,22 @@ function applyTheme(theme) {
       el.textContent = 'ID';
     }
   });
+  const name = theme.name || DEFAULT_NAME;
+  document.title = name;
+  document.querySelectorAll('.logo-title').forEach(el => { el.textContent = name; });
+  const loginTitle = document.getElementById('loginBrandTitle');
+  if (loginTitle) loginTitle.textContent = name;
 }
 
 applyTheme(loadTheme());
 
 function setupSettingsPage() {
   const theme = loadTheme();
+  const nameInput = document.getElementById('settingsName');
   const accentInput = document.getElementById('settingsAccent');
   const fileInput = document.getElementById('settingsLogoFile');
 
+  nameInput.value = theme.name || '';
   accentInput.value = theme.accent || DEFAULT_ACCENT;
 
   function update(partial) {
@@ -67,6 +75,7 @@ function setupSettingsPage() {
     applyTheme(next);
   }
 
+  nameInput.oninput = () => update({ name: nameInput.value.trim() });
   accentInput.oninput = () => update({ accent: accentInput.value });
 
   document.getElementById('settingsLogoUpload').onclick = () => fileInput.click();
@@ -83,6 +92,7 @@ function setupSettingsPage() {
   document.getElementById('settingsResetAll').onclick = () => {
     localStorage.removeItem(THEME_KEY);
     applyTheme({});
+    nameInput.value = '';
     accentInput.value = DEFAULT_ACCENT;
     showToast('Aparência restaurada ao padrão', 'success');
   };

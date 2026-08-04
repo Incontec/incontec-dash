@@ -20,7 +20,7 @@
 <div class="login-screen hidden" id="loginScreen">
   <form class="login-card" id="loginForm">
     <div class="logo-icon" style="margin-bottom:16px">ID</div>
-    <div class="login-title">INCONTEC DASH</div>
+    <div class="login-title" id="loginBrandTitle">INCONTEC DASH</div>
     <div class="login-sub">Entre com sua conta para continuar</div>
     <div class="login-error hidden" id="loginError"></div>
     <label class="login-label" for="loginEmail">Email</label>
@@ -331,6 +331,13 @@
 
       <!-- CONFIGURAÇÕES -->
       <div class="page" id="page-Configurações">
+        <div class="ind-card">
+          <div class="ind-label">Nome do sistema</div>
+          <div style="display:flex;align-items:center;gap:16px;margin-top:12px">
+            <input type="text" id="settingsName" class="cr-input" style="max-width:280px" maxlength="40" placeholder="INCONTEC DASH" />
+            <div style="font-size:12px;color:var(--muted);max-width:300px">Aparece na barra lateral, na tela de login e no título da aba do navegador.</div>
+          </div>
+        </div>
         <div class="ind-card">
           <div class="ind-label">Cor de destaque</div>
           <div style="display:flex;align-items:center;gap:16px;margin-top:12px">
