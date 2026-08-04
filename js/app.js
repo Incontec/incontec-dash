@@ -112,6 +112,7 @@ function buildState(periodKey) {
 
 function renderAll(state) {
   renderBanner(state);
+  renderDashboardHero(state);
   renderDashboardCards(state);
   renderFluxoPage(state);
   renderReceberBanner(state);

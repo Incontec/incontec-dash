@@ -11,39 +11,58 @@ function destroyChart(key) {
   if (charts[key]) { charts[key].destroy(); delete charts[key]; }
 }
 
-// Dashboard: evolução mensal (linha/área) + saldo por banco (barra/pizza)
+// Dashboard: evolução mensal (área) + saldo por banco (barra/rosca, top 8/6 —
+// with 124 bancos, plotting all of them makes labels unreadable and crushes
+// the bar/slice scale down to the handful of outliers, so both are capped to
+// the banks that actually matter and the rest are folded into "Outros".
 function renderDashboardCharts(state) {
-  const { fluxoMensal, bancos } = state;
+  const { fluxoMensal, bancos, bancoStats } = state;
   const mensalLabels = fluxoMensal.map(m => MES_LABEL[m.MonthNumber - 1] || m.MonthNumber);
   const mensalSaldo = fluxoMensal.map(m => m.saldo);
-  const bancoLabels = bancos.map(b => b.Descri_banco);
-  const bancoSaldos = bancos.map(b => b.saldo);
-  const bancoCores = bancos.map(b => colorForBank(b.Descri_banco));
 
-  destroyChart('line'); destroyChart('bar'); destroyChart('pie'); destroyChart('area');
+  const bancosPorSaldo = [...bancos].sort((a, b) => b.saldo - a.saldo);
+  const topBar = bancosPorSaldo.slice(0, 8);
 
-  charts.line = new Chart(document.getElementById('lineChart'),{
-    type:'line', data:{ labels:mensalLabels, datasets:[{ data:mensalSaldo, borderColor:'#6FE3A6', borderWidth:2, pointRadius:0, tension:.4, fill:false }] },
+  // Negative-saldo accounts (overdraft/factoring) can't be netted into a
+  // single "Outros" slice with positive ones -- a few dozen accounts here
+  // sum to a large negative number that would swamp the real, positive
+  // "Outros" balance and make the slice's size meaningless. A donut is a
+  // share-of-holdings view, so it only makes sense over positive balances,
+  // same reasoning computeBancoStats already applies to "concentração".
+  const bancosPositivos = bancosPorSaldo.filter(b => b.saldo > 0);
+  const TOP_N_DONUT = 6;
+  const topDonut = bancosPositivos.slice(0, TOP_N_DONUT);
+  const outrosSaldo = bancosPositivos.slice(TOP_N_DONUT).reduce((s, b) => s + b.saldo, 0);
+  const temOutros = bancosPositivos.length > TOP_N_DONUT;
+  const donutLabels = topDonut.map(b => b.Descri_banco).concat(temOutros ? [`Outros (${bancosPositivos.length - TOP_N_DONUT})`] : []);
+  const donutValues = topDonut.map(b => b.saldo).concat(temOutros ? [outrosSaldo] : []);
+  const donutCores = topDonut.map(b => colorForBank(b.Descri_banco)).concat(temOutros ? ['#4A5952'] : []);
+
+  destroyChart('line'); destroyChart('bar'); destroyChart('pie');
+
+  const lCtx = document.getElementById('lineChart').getContext('2d');
+  const grad = lCtx.createLinearGradient(0, 0, 0, 260);
+  grad.addColorStop(0, 'rgba(111,227,166,.35)'); grad.addColorStop(1, 'rgba(111,227,166,0)');
+  charts.line = new Chart(lCtx,{
+    type:'line', data:{ labels:mensalLabels, datasets:[{ data:mensalSaldo, borderColor:'#6FE3A6', borderWidth:2, backgroundColor:grad, pointRadius:0, tension:.4, fill:true }] },
     options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{...TP, callbacks:{label:c=>fmtBRL(c.raw)}} },
       scales:{ x:{grid:{color:'#1E2823', drawTicks:false}, border:{display:false}}, y:{grid:{color:'#1E2823', drawTicks:false}, border:{display:false}, ticks:{callback:fmtM}} } }
   });
   charts.bar = new Chart(document.getElementById('barChart'),{
-    type:'bar', data:{ labels:bancoLabels, datasets:[{ data:bancoSaldos, backgroundColor:bancoCores, borderRadius:4 }] },
+    type:'bar', data:{ labels:topBar.map(b=>b.Descri_banco), datasets:[{ data:topBar.map(b=>b.saldo), backgroundColor:topBar.map(b=>colorForBank(b.Descri_banco)), borderRadius:4 }] },
     options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{...TP, callbacks:{label:c=>fmtBRL(c.raw)}} },
       scales:{ x:{grid:{color:'#1E2823', drawTicks:false}, border:{display:false}, ticks:{callback:fmtK}}, y:{grid:{display:false}, border:{display:false}} } }
   });
   charts.pie = new Chart(document.getElementById('pieChart'),{
-    type:'doughnut', data:{ labels:bancoLabels, datasets:[{ data:bancoSaldos, backgroundColor:bancoCores, borderWidth:0, hoverOffset:4 }] },
+    type:'doughnut', data:{ labels:donutLabels, datasets:[{ data:donutValues, backgroundColor:donutCores, borderWidth:0, hoverOffset:4 }] },
     options:{ responsive:true, maintainAspectRatio:false, cutout:'65%',
-      plugins:{ legend:{display:true, position:'right', labels:{color:'#7E9389', font:{size:11}, padding:12}}, tooltip:{...TP, callbacks:{label:c=>fmtBRL(c.raw)}} } }
-  });
-  const aCtx = document.getElementById('areaChart').getContext('2d');
-  const grad = aCtx.createLinearGradient(0,0,0,200);
-  grad.addColorStop(0,'rgba(111,227,166,.35)'); grad.addColorStop(1,'rgba(111,227,166,0)');
-  charts.area = new Chart(aCtx,{
-    type:'line', data:{ labels:mensalLabels, datasets:[{ data:mensalSaldo, borderColor:'#6FE3A6', borderWidth:2, backgroundColor:grad, pointRadius:0, tension:.4, fill:true }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{...TP, callbacks:{label:c=>fmtBRL(c.raw)}} },
-      scales:{ x:{grid:{color:'#1E2823', drawTicks:false}, border:{display:false}}, y:{grid:{color:'#1E2823', drawTicks:false}, border:{display:false}, ticks:{callback:fmtM}} } }
+      plugins:{ legend:{display:true, position:'right', labels:{color:'#7E9389', font:{size:11}, padding:12,
+        generateLabels: chart => chart.data.labels.map((label, i) => {
+          const value = chart.data.datasets[0].data[i];
+          const pct = bancoStats.totalPositivo ? Math.round(Math.max(value,0) / bancoStats.totalPositivo * 100) : 0;
+          return { text:`${label} (${pct}%)`, fillStyle:chart.data.datasets[0].backgroundColor[i], index:i };
+        }) } },
+        tooltip:{...TP, callbacks:{label:c=>fmtBRL(c.raw)}} } }
   });
 }
 

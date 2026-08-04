@@ -22,10 +22,18 @@ function renderBanner(state) {
     ${bancoStats.bancoLider ? `${bancoStats.bancoLider.Descri_banco} concentra <span class="val">${bancoStats.concentracao}%</span> dos recursos.` : ''} ${warnHtml}</span>`;
 }
 
+// Saldo Consolidado gets its own hero treatment (larger, top of the page) --
+// it's the one number that summarizes all the others below it.
+function renderDashboardHero(state) {
+  const { kpis } = state;
+  document.getElementById('dashHero').innerHTML = `
+    <div class="dash-hero-icon">${I.wallet}</div>
+    <div><div class="dash-hero-label">Saldo Consolidado</div><div class="dash-hero-value">${fmtBRLSigned(kpis.saldo_bancos)}</div></div>`;
+}
+
 function renderDashboardCards(state) {
   const { kpis, bancoStats } = state;
   renderMetricCards(document.getElementById('cards'), [
-    { label:"Saldo Consolidado", value:fmtBRLSigned(kpis.saldo_bancos), ik:"wallet" },
     { label:"Qtd. de Bancos",    value:bancoStats.qtdBancos,       ik:"landmark" },
     { label:"Total Vendido",     value:fmtBRLSigned(kpis.valor_vendido), ik:"bar" },
     { label:"Total a Receber",   value:fmtBRLRed(kpis.total_receber), ik:"gauge" },
