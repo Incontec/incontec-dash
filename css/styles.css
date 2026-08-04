@@ -231,6 +231,9 @@ canvas { display:block; }
 .btn-primary { font-size:13px; font-weight:600; padding:9px 18px; border-radius:8px; background:var(--accent); color:#06140C; border:none; cursor:pointer; }
 .btn-secondary { font-size:13px; font-weight:500; padding:9px 18px; border-radius:8px; background:transparent; color:var(--muted); border:1px solid var(--border); cursor:pointer; }
 .btn-secondary:hover { color:var(--text); }
+.color-input { width:52px;height:52px;border:1px solid var(--border);border-radius:10px;background:transparent;cursor:pointer;padding:3px; }
+.color-input::-webkit-color-swatch-wrapper { padding:0; }
+.color-input::-webkit-color-swatch { border:none;border-radius:7px; }
 
 /* Table controls: search, filter chips, pagination, sortable headers */
 .table-controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }

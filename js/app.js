@@ -8,6 +8,7 @@ const NAV = [
   { label:"Relatórios",       iconKey:"bar",       subtitle:"Exportações e históricos" },
   { label:"Indicadores",      iconKey:"gauge",     subtitle:"Métricas estratégicas" },
   { label:"INCONTEC AI",      iconKey:"sparkles",  subtitle:"Assistente financeiro inteligente" },
+  { label:"Configurações",    iconKey:"settings",  subtitle:"Personalize a aparência do dashboard" },
 ];
 
 let activeLabel = "Dashboard";
@@ -149,6 +150,7 @@ async function loadAndRender() {
 
   setupPeriodFilter();
   setupCustomReport();
+  setupSettingsPage();
   renderAll(buildState(document.getElementById('periodFilter').value));
 
   setLastUpdated(new Date());

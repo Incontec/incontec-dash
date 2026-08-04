@@ -323,12 +323,38 @@
         </div>
       </div>
 
+      <!-- CONFIGURAÇÕES -->
+      <div class="page" id="page-Configurações">
+        <div class="ind-card">
+          <div class="ind-label">Cor de destaque</div>
+          <div style="display:flex;align-items:center;gap:16px;margin-top:12px">
+            <input type="color" id="settingsAccent" class="color-input" />
+            <div style="font-size:12px;color:var(--muted);max-width:360px">Usada em ícones, saldos positivos, botões e gráficos em todo o dashboard.</div>
+          </div>
+        </div>
+        <div class="ind-card">
+          <div class="ind-label">Logo</div>
+          <div style="display:flex;align-items:center;gap:16px;margin-top:12px">
+            <div class="logo-icon" style="width:52px;height:52px;font-size:18px">ID</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <input type="file" id="settingsLogoFile" accept="image/*" style="display:none" />
+              <button class="btn-secondary" id="settingsLogoUpload" type="button">Enviar imagem</button>
+              <button class="btn-secondary" id="settingsLogoReset" type="button">Restaurar padrão</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <button class="btn-secondary" id="settingsResetAll" type="button">Restaurar tudo ao padrão</button>
+        </div>
+      </div>
+
     </div><!-- /content -->
   </main>
 </div>
 
 <script src="js/format.js"></script>
 <script src="js/icons.js"></script>
+<script src="js/settings.js"></script>
 <script src="js/config.js"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/auth.js"></script>
