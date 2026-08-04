@@ -33,15 +33,38 @@ function mdToHtml(text) {
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/`(.+?)`/g, '<code>$1</code>');
 
+  const isTableRow = line => /^\|.*\|$/.test(line);
+  const isSeparatorRow = line => /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$/.test(line);
+  const splitCells = line => line.replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+
   const lines = text.split('\n');
   let html = '';
   let listType = null; // 'ul' | 'ol' | null
+  let tableRows = null; // [header, ...body], each a cell-string array
 
   const closeList = () => { if (listType) { html += `</${listType}>`; listType = null; } };
+  const closeTable = () => {
+    if (!tableRows) return;
+    const [head, ...body] = tableRows;
+    html += '<table><thead><tr>' + head.map(c => `<th>${inline(c)}</th>`).join('') + '</tr></thead>';
+    if (body.length) html += '<tbody>' + body.map(r => '<tr>' + r.map(c => `<td>${inline(c)}</td>`).join('') + '</tr>').join('') + '</tbody>';
+    html += '</table>';
+    tableRows = null;
+  };
 
   lines.forEach(raw => {
     const line = raw.trim();
-    if (!line) { closeList(); return; }
+    if (!line) { closeList(); closeTable(); return; }
+
+    // GFM table: a header row, a |---|---| separator (skipped), then body rows.
+    if (isTableRow(line)) {
+      closeList();
+      if (!tableRows) { tableRows = [splitCells(line)]; return; }
+      if (tableRows.length === 1 && isSeparatorRow(line)) return;
+      tableRows.push(splitCells(line));
+      return;
+    }
+    closeTable();
 
     const h = line.match(/^(#{1,4})\s+(.*)/);
     if (h) { closeList(); html += `<h4>${inline(h[2])}</h4>`; return; }
@@ -64,6 +87,7 @@ function mdToHtml(text) {
     html += `<p>${inline(line)}</p>`;
   });
   closeList();
+  closeTable();
   return html;
 }
 
