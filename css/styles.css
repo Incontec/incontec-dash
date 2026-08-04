@@ -30,6 +30,7 @@ nav { flex:1;padding:12px;display:flex;flex-direction:column;gap:2px;overflow-y:
 .nav-icon-badge { width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:transparent;transition:background .12s; }
 .nav-item.active .nav-icon-badge, .nav-item:hover .nav-icon-badge { background:rgba(111,227,166,.1); }
 .nav-icon { width:15px;height:15px;flex-shrink:0; }
+.sidebar-settings { padding:8px 12px;border-top:1px solid var(--border); }
 .sidebar-footer { margin:12px;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--muted); }
 .sync-row { display:flex;align-items:center;gap:6px;margin-top:6px; }
 .sync-dot { width:6px;height:6px;background:var(--accent);border-radius:50%;box-shadow:0 0 0 3px rgba(111,227,166,.15); }

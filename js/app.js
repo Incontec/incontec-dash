@@ -1,15 +1,20 @@
 // ── Nav ───────────────────────────────────────────────
+// INCONTEC AI sits right after Dashboard -- it's the product's differentiator,
+// not just another report page, so it gets top billing in the nav.
 const NAV = [
   { label:"Dashboard",        iconKey:"dashboard", subtitle:"Visão consolidada de bancos e contas" },
+  { label:"INCONTEC AI",      iconKey:"sparkles",  subtitle:"Assistente financeiro inteligente" },
   { label:"Fluxo de Caixa",   iconKey:"wallet",    subtitle:"Entradas e saídas previstas" },
   { label:"Contas a Receber", iconKey:"arrowDown", subtitle:"Recebíveis em aberto" },
   { label:"Contas a Pagar",   iconKey:"arrowUp",   subtitle:"Obrigações pendentes" },
   { label:"Bancos",           iconKey:"landmark",  subtitle:"Saldos por instituição financeira" },
   { label:"Relatórios",       iconKey:"bar",       subtitle:"Exportações e históricos" },
   { label:"Indicadores",      iconKey:"gauge",     subtitle:"Métricas estratégicas" },
-  { label:"INCONTEC AI",      iconKey:"sparkles",  subtitle:"Assistente financeiro inteligente" },
-  { label:"Configurações",    iconKey:"settings",  subtitle:"Personalize a aparência do dashboard" },
 ];
+// Kept out of the main nav list -- rendered in its own slot above the sync
+// footer instead, the usual "settings tucked in the corner" placement.
+const SETTINGS_NAV = { label:"Configurações", iconKey:"settings", subtitle:"Personalize a aparência do dashboard" };
+const ALL_NAV = [...NAV, SETTINGS_NAV];
 
 let activeLabel = "Dashboard";
 
@@ -30,10 +35,10 @@ function setActive(label) {
   document.querySelectorAll('.nav-item').forEach(b => {
     const isActive = b.dataset.label === label;
     b.classList.toggle('active', isActive);
-    b.innerHTML = navItemInner(NAV.find(n=>n.label===b.dataset.label).iconKey, b.dataset.label, isActive);
+    b.innerHTML = navItemInner(ALL_NAV.find(n=>n.label===b.dataset.label).iconKey, b.dataset.label, isActive);
   });
   document.querySelectorAll('.mobile-tab').forEach(b => b.classList.toggle('active', b.dataset.label === label));
-  const nav = NAV.find(n => n.label === label);
+  const nav = ALL_NAV.find(n => n.label === label);
   document.getElementById('pageTitle').textContent = label;
   document.getElementById('pageSubtitle').textContent = nav ? nav.subtitle : '';
 }
@@ -49,8 +54,16 @@ function renderNavShell() {
     sidebarNav.appendChild(btn);
   });
 
+  const settingsSlot = document.getElementById('sidebarSettings');
+  const settingsBtn = document.createElement('button');
+  settingsBtn.className = 'nav-item' + (SETTINGS_NAV.label === activeLabel ? ' active' : '');
+  settingsBtn.dataset.label = SETTINGS_NAV.label;
+  settingsBtn.onclick = () => setActive(SETTINGS_NAV.label);
+  settingsBtn.innerHTML = navItemInner(SETTINGS_NAV.iconKey, SETTINGS_NAV.label, SETTINGS_NAV.label === activeLabel);
+  settingsSlot.appendChild(settingsBtn);
+
   const mobileTabs = document.getElementById('mobileTabs');
-  NAV.forEach(item => {
+  ALL_NAV.forEach(item => {
     const btn = document.createElement('button');
     btn.className = 'mobile-tab' + (item.label === activeLabel ? ' active' : '');
     btn.dataset.label = item.label;
