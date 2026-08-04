@@ -220,12 +220,69 @@
             <div style="font-size:13px;font-weight:500">Exportar Excel</div>
             <div class="ind-sub">Por banco · data de hoje</div>
           </div>
+          <div class="ind-card" id="rep-custom" style="cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div class="card-icon" style="margin-bottom:12px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
+            <div class="ind-label">Relatório Personalizado</div>
+            <div style="font-size:13px;font-weight:500">Escolher dados e gerar</div>
+            <div class="ind-sub">Fonte, cliente, período, colunas e formato</div>
+          </div>
         </div>
         <div class="banco-table">
           <table>
             <thead><tr><th>Relatório</th><th>Formato</th><th>Gerado às</th></tr></thead>
             <tbody id="relatorios-log"></tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Relatório Personalizado — modal -->
+      <div class="modal-overlay hidden" id="customReportModal">
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">Relatório Personalizado</div>
+            <button class="modal-close" id="customReportClose">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Fonte de dados</label>
+              <select id="cr-fonte" class="cr-input">
+                <option value="vendas">Vendas</option>
+                <option value="recebiveis">Recebíveis (Inadimplência)</option>
+                <option value="bancos">Bancos</option>
+                <option value="fluxo">Fluxo de Caixa</option>
+              </select>
+            </div>
+            <div class="form-group" id="cr-cliente-group">
+              <label>Cliente (opcional)</label>
+              <input type="text" id="cr-cliente" class="cr-input" placeholder="Ex: Tania Raquel...">
+            </div>
+            <div class="form-row" id="cr-periodo-group">
+              <div class="form-group">
+                <label>De</label>
+                <input type="date" id="cr-de" class="cr-input">
+              </div>
+              <div class="form-group">
+                <label>Até</label>
+                <input type="date" id="cr-ate" class="cr-input">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Colunas</label>
+              <div id="cr-colunas" class="cr-checkboxes"></div>
+            </div>
+            <div class="form-group">
+              <label>Formato</label>
+              <div class="cr-formats" id="cr-formato">
+                <button type="button" class="cr-format-btn active" data-fmt="csv">CSV</button>
+                <button type="button" class="cr-format-btn" data-fmt="xlsx">Excel</button>
+                <button type="button" class="cr-format-btn" data-fmt="pdf">PDF</button>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" id="customReportCancel">Cancelar</button>
+            <button class="btn-primary" id="customReportGenerate">Gerar Relatório</button>
+          </div>
         </div>
       </div>
 
@@ -269,6 +326,7 @@
 <script src="js/table-controls.js"></script>
 <script src="js/toast.js"></script>
 <script src="js/export.js"></script>
+<script src="js/custom-report.js"></script>
 <script src="js/ai-panel.js"></script>
 <script src="js/app.js"></script>
 </body>

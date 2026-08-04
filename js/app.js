@@ -141,6 +141,7 @@ async function loadAndRender() {
   rawData = { kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, bancoStats: computeBancoStats(bancos) };
 
   setupPeriodFilter();
+  setupCustomReport();
   renderAll(buildState(document.getElementById('periodFilter').value));
 
   setLastUpdated(new Date());
