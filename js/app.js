@@ -1,15 +1,16 @@
 // ── Nav ───────────────────────────────────────────────
-// INCONTEC AI sits right after Dashboard -- it's the product's differentiator,
-// not just another report page, so it gets top billing in the nav.
+// INCONTEC AI sits last -- kept out of the way of the day-to-day report
+// pages, but its icon stays permanently accent-tinted (see .nav-item-ai in
+// styles.css) so it still stands out instead of blending into the list.
 const NAV = [
   { label:"Dashboard",        iconKey:"dashboard", subtitle:"Visão consolidada de bancos e contas" },
-  { label:"INCONTEC AI",      iconKey:"sparkles",  subtitle:"Assistente financeiro inteligente" },
   { label:"Fluxo de Caixa",   iconKey:"wallet",    subtitle:"Entradas e saídas previstas" },
   { label:"Contas a Receber", iconKey:"arrowDown", subtitle:"Recebíveis em aberto" },
   { label:"Contas a Pagar",   iconKey:"arrowUp",   subtitle:"Obrigações pendentes" },
   { label:"Bancos",           iconKey:"landmark",  subtitle:"Saldos por instituição financeira" },
   { label:"Relatórios",       iconKey:"bar",       subtitle:"Exportações e históricos" },
   { label:"Indicadores",      iconKey:"gauge",     subtitle:"Métricas estratégicas" },
+  { label:"INCONTEC AI",      iconKey:"sparkles",  subtitle:"Assistente financeiro inteligente" },
 ];
 // Kept out of the main nav list -- rendered in its own slot above the sync
 // footer instead, the usual "settings tucked in the corner" placement.
@@ -55,7 +56,7 @@ function renderNavShell() {
   const sidebarNav = document.getElementById('sidebarNav');
   NAV.forEach(item => {
     const btn = document.createElement('button');
-    btn.className = 'nav-item' + (item.label === activeLabel ? ' active' : '');
+    btn.className = 'nav-item' + (item.label === activeLabel ? ' active' : '') + (item.label === "INCONTEC AI" ? ' nav-item-ai' : '');
     btn.dataset.label = item.label;
     btn.onclick = () => setActive(item.label);
     btn.innerHTML = navItemInner(item.iconKey, item.label, item.label === activeLabel);

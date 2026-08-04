@@ -30,6 +30,11 @@ nav { flex:1;padding:12px;display:flex;flex-direction:column;gap:2px;overflow-y:
 .nav-icon-badge { width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:transparent;transition:background .12s; }
 .nav-item.active .nav-icon-badge, .nav-item:hover .nav-icon-badge { background:rgba(111,227,166,.1); }
 .nav-icon { width:15px;height:15px;flex-shrink:0; }
+/* INCONTEC AI sits last in the list -- its icon stays permanently
+   accent-tinted (not just on hover/active) so it doesn't blend in
+   despite the bottom position. */
+.nav-item-ai .nav-icon-badge { background:rgba(111,227,166,.14); }
+.nav-item-ai .nav-icon { color:var(--accent); }
 .sidebar-settings { padding:8px 12px;border-top:1px solid var(--border); }
 
 /* Main */
