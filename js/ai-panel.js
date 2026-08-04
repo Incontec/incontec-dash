@@ -99,11 +99,20 @@ function setupAI(state, messagesId, quickId, inputId, sendId) {
   function render() {
     msgsEl.innerHTML = '';
     msgs.forEach(m => {
+      const row = document.createElement('div');
+      row.className = `msg-row ${m.role}`;
+      if (m.role === 'ai') {
+        const avatar = document.createElement('div');
+        avatar.className = 'msg-avatar';
+        avatar.innerHTML = I.sparkles;
+        row.appendChild(avatar);
+      }
       const d = document.createElement('div');
       d.className = `message ${m.role}` + (m.pending ? ' pending' : '');
       if (m.role === 'ai' && !m.pending) d.innerHTML = mdToHtml(m.text);
       else d.textContent = m.text;
-      msgsEl.appendChild(d);
+      row.appendChild(d);
+      msgsEl.appendChild(row);
     });
     msgsEl.scrollTop = msgsEl.scrollHeight;
   }

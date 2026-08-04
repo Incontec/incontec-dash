@@ -12,6 +12,15 @@ const NAV = [
 
 let activeLabel = "Dashboard";
 
+function navItemInner(iconKey, label, isActive) {
+  return `
+    ${isActive ? '<span class="active-bar"></span>' : ''}
+    <span class="nav-icon-badge"><span class="nav-icon">${I[iconKey]}</span></span>
+    <span style="flex:1">${label}</span>
+    ${isActive ? '<span class="nav-dot"></span>' : ''}
+  `;
+}
+
 function setActive(label) {
   activeLabel = label;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -20,12 +29,7 @@ function setActive(label) {
   document.querySelectorAll('.nav-item').forEach(b => {
     const isActive = b.dataset.label === label;
     b.classList.toggle('active', isActive);
-    b.innerHTML = `
-      ${isActive ? '<span class="active-bar"></span>' : ''}
-      <span class="nav-icon" style="color:${isActive?'var(--accent)':'var(--muted)'}">${I[NAV.find(n=>n.label===b.dataset.label).iconKey]}</span>
-      <span style="flex:1">${b.dataset.label}</span>
-      ${isActive ? '<span class="nav-dot"></span>' : ''}
-    `;
+    b.innerHTML = navItemInner(NAV.find(n=>n.label===b.dataset.label).iconKey, b.dataset.label, isActive);
   });
   document.querySelectorAll('.mobile-tab').forEach(b => b.classList.toggle('active', b.dataset.label === label));
   const nav = NAV.find(n => n.label === label);
@@ -40,12 +44,7 @@ function renderNavShell() {
     btn.className = 'nav-item' + (item.label === activeLabel ? ' active' : '');
     btn.dataset.label = item.label;
     btn.onclick = () => setActive(item.label);
-    btn.innerHTML = `
-      ${item.label === activeLabel ? '<span class="active-bar"></span>' : ''}
-      <span class="nav-icon" style="color:${item.label===activeLabel?'var(--accent)':'var(--muted)'}">${I[item.iconKey]}</span>
-      <span style="flex:1">${item.label}</span>
-      ${item.label === activeLabel ? '<span class="nav-dot"></span>' : ''}
-    `;
+    btn.innerHTML = navItemInner(item.iconKey, item.label, item.label === activeLabel);
     sidebarNav.appendChild(btn);
   });
 
@@ -131,7 +130,6 @@ function renderAll(state) {
   renderBancosChart(state);
   renderIndicadoresChart(state);
 
-  setupAI(state, 'messages',  'quickBtns',  'aiInput',  'sendBtn');
   setupAI(state, 'messages2', 'quickBtns2', 'aiInput2', 'sendBtn2');
   setupExports(state);
 }

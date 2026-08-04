@@ -106,19 +106,6 @@
           <div class="chart-card"><div class="chart-title">Saldo por Banco</div><div class="chart-wrap"><canvas id="barChart"></canvas></div></div>
           <div class="chart-card"><div class="chart-title">Distribuição Financeira</div><div class="chart-wrap"><canvas id="pieChart"></canvas></div></div>
         </div>
-        <div class="ai-panel">
-          <div class="ai-header">
-            <div class="ai-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#6FE3A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
-            <div class="ai-title">INCONTEC AI</div>
-            <span class="ai-badge">Online</span>
-          </div>
-          <div class="messages" id="messages"></div>
-          <div class="quick-btns" id="quickBtns"></div>
-          <div class="input-row">
-            <input class="ai-input" id="aiInput" placeholder="Pergunte algo sobre seus dados financeiros..." />
-            <button class="send-btn" id="sendBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
-          </div>
-        </div>
       </div>
 
       <!-- FLUXO DE CAIXA -->
@@ -317,14 +304,17 @@
       </div>
 
       <!-- INCONTEC AI -->
-      <div class="page" id="page-INCONTEC AI">
-        <div class="ai-panel" style="min-height:480px">
+      <div class="page ai-page" id="page-INCONTEC AI">
+        <div class="ai-panel standalone">
           <div class="ai-header">
             <div class="ai-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#6FE3A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
-            <div class="ai-title">INCONTEC AI — Assistente Financeiro</div>
+            <div>
+              <div class="ai-title">INCONTEC AI — Assistente Financeiro</div>
+              <div class="ai-subtitle">Saldos, vendas, inadimplência e histórico de clientes, em linguagem natural</div>
+            </div>
             <span class="ai-badge">Online</span>
           </div>
-          <div class="messages" id="messages2" style="max-height:360px"></div>
+          <div class="messages" id="messages2"></div>
           <div class="quick-btns" id="quickBtns2"></div>
           <div class="input-row">
             <input class="ai-input" id="aiInput2" placeholder="Pergunte algo sobre seus dados financeiros..." />
