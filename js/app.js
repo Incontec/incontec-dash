@@ -88,7 +88,7 @@ let rawData = null;
 
 function buildState(periodKey) {
   const range = getPeriodRange(periodKey);
-  const { bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, bancoStats } = rawData;
+  const { bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, bancoStats, contasPagar } = rawData;
 
   const fluxoCaixaFiltered = fluxoCaixa.filter(r => inPeriod(r.Data, range));
   const recebiveisFiltered = recebiveis.filter(r => inPeriod(r["Data Venda"], range));
@@ -96,10 +96,16 @@ function buildState(periodKey) {
   const receberSummary = computeReceberSummary(recebiveisFiltered);
   const pmr = computePMR(recebiveisFiltered);
 
+  // Contas a Pagar is forward-looking (bills not yet due) -- unlike sales/fluxo,
+  // filtering it by a backward-looking period ("últimos 3 meses" etc.) would
+  // zero it out, so it's excluded from the period filter, same as bancos.
+  const pagarSummary = computePagarSummary(contasPagar);
+
   return {
     kpis, bancos, bancoStats,
     fluxoCaixa: fluxoCaixaFiltered, fluxoMensal,
     receber: { rows: recebiveisFiltered, summary: receberSummary },
+    pagar: { rows: contasPagar, summary: pagarSummary },
     pmr, vendasObra,
   };
 }
@@ -111,7 +117,9 @@ function renderAll(state) {
   renderReceberBanner(state);
   renderReceberSummaryCards(state);
   setupReceberTable(state);
-  renderPagarEmptyState();
+  renderPagarBanner(state);
+  renderPagarSummaryCards(state);
+  setupPagarTable(state);
   renderBancosCards(state);
   setupBancosTable(state);
   renderIndicadoresCards(state);
@@ -134,11 +142,11 @@ function setupPeriodFilter() {
 }
 
 async function loadAndRender() {
-  const [kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw] = await Promise.all([
-    getKpis(), getBancos(), getFluxoCaixa(), getFluxoMensal(), getRecebiveis(), getVendasObra(), getResumoVendasRaw(),
+  const [kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, contasPagar] = await Promise.all([
+    getKpis(), getBancos(), getFluxoCaixa(), getFluxoMensal(), getRecebiveis(), getVendasObra(), getResumoVendasRaw(), getContasPagar(),
   ]);
 
-  rawData = { kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, bancoStats: computeBancoStats(bancos) };
+  rawData = { kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, contasPagar, bancoStats: computeBancoStats(bancos) };
 
   setupPeriodFilter();
   setupCustomReport();

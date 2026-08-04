@@ -10,14 +10,6 @@ function renderMetricCards(containerEl, items) {
   });
 }
 
-function emptyStateHtml(title, desc) {
-  return `<div class="coming-soon">
-    <div class="cs-icon">${I.alert}</div>
-    <div class="cs-title">${title}</div>
-    <div class="cs-desc">${desc}</div>
-  </div>`;
-}
-
 // ── Dashboard: banner + cards ─────────────────────────
 function renderBanner(state) {
   const { kpis, bancoStats } = state;
@@ -74,11 +66,35 @@ function renderReceberSummaryCards(state) {
 }
 
 // ── Contas a Pagar ─────────────────────────────────────
-function renderPagarEmptyState() {
-  document.getElementById('pagar-content').innerHTML = emptyStateHtml(
-    "Nenhuma fonte de dados conectada",
-    "Contas a Pagar ainda não tem uma tabela ou view no Supabase alimentada pelo ERP. Assim que houver dados de fornecedores/pagamentos, esta página passa a funcionar como as demais."
-  );
+function renderPagarBanner(state) {
+  const { summary } = state.pagar;
+  document.getElementById('banner-pagar').innerHTML = `
+    <span style="color:var(--accent);flex-shrink:0;margin-top:2px;width:18px;height:18px">${I.arrowUp}</span>
+    <span><span class="hi">Contas a Pagar:</span> Total em aberto de <span class="val">${fmtBRLRed(summary.totalPagar)}</span>.
+    <span class="warn">${summary.vencidosCount} título${summary.vencidosCount===1?'':'s'} vencido${summary.vencidosCount===1?'':'s'}</span> aguardando pagamento.</span>`;
+}
+
+function renderPagarTable(rows) {
+  const statusColor = s => s === "Vencido" ? "#E38C8C" : "#E3C26A";
+  const tbody = document.getElementById('pagar-tbody');
+  tbody.innerHTML = '';
+  rows.forEach(r => {
+    const status = statusFromPagar(r);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.nominal || '—'}</td><td style="color:var(--muted)">${r.obra || '—'}</td><td style="color:var(--muted)">${r.vencimento ? r.vencimento.slice(0,10) : '—'}</td><td style="font-weight:500;color:#E38C8C">${fmtBRL(r.valor_pagar || 0)}</td>
+      <td><span style="font-size:11px;padding:2px 8px;border-radius:4px;background:${statusColor(status)}22;color:${statusColor(status)}">${status}</span></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderPagarSummaryCards(state) {
+  const s = state.pagar.summary;
+  document.getElementById('pag-vencido-valor').innerHTML = fmtBRLRed(s.totalVencido);
+  document.getElementById('pag-vencido-sub').textContent = `${s.vencidosCount} título${s.vencidosCount===1?'':'s'} vencido${s.vencidosCount===1?'':'s'}`;
+  document.getElementById('pag-fornecedores-valor').textContent = s.fornecedoresUnicos;
+  document.getElementById('pag-fornecedores-sub').textContent = `fornecedor${s.fornecedoresUnicos===1?'':'es'} com título${s.fornecedoresUnicos===1?'':'s'} em aberto`;
+  document.getElementById('pag-proximo-valor').textContent = s.proximoVencimento ? fmtDateBR(s.proximoVencimento.data.toISOString().slice(0,10)) : '—';
+  document.getElementById('pag-proximo-sub').textContent = s.proximoVencimento ? `${s.proximoVencimento.fornecedor} · ${fmtBRL(s.proximoVencimento.valor)}` : '—';
 }
 
 // ── Fluxo de Caixa ─────────────────────────────────────

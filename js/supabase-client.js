@@ -53,3 +53,11 @@ async function getVendasObra() {
 async function getResumoVendasRaw() {
   return fetchView("resumo_vendas", 'Cliente,Obra,"Data Venda","Valor Venda","Valor Recebido","Total a Receber",StatusVen,"Data Quitação"');
 }
+
+// contas_pagar holds only open/pending bills (that's what the ERP query
+// already filters for) -- there's no "paid" flag, so every row is a current
+// obligation, sorted soonest-due-first for a payables worklist.
+async function getContasPagar() {
+  const rows = await fetchView("contas_pagar", "nominal,obra,vencimento,valor_pagar,tipo_conta");
+  return rows.sort((a, b) => (a.vencimento || '').localeCompare(b.vencimento || ''));
+}

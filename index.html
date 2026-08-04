@@ -173,7 +173,29 @@
 
       <!-- CONTAS A PAGAR -->
       <div class="page" id="page-Contas a Pagar">
-        <div id="pagar-content"></div>
+        <div class="banner" id="banner-pagar"></div>
+        <div class="table-controls">
+          <input class="table-search" id="pagar-search" placeholder="Buscar por fornecedor ou obra..." />
+          <div class="filter-chips" id="pagar-chips"></div>
+        </div>
+        <div class="banco-table">
+          <table>
+            <thead><tr>
+              <th data-sort="nominal">Fornecedor</th>
+              <th data-sort="obra">Obra</th>
+              <th data-sort="vencimento">Vencimento</th>
+              <th data-sort="valor_pagar">Valor</th>
+              <th>Status</th>
+            </tr></thead>
+            <tbody id="pagar-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagar-pagination"></div>
+        <div class="ind-grid">
+          <div class="ind-card"><div class="ind-label">Total vencido</div><div class="ind-value" style="color:#E38C8C" id="pag-vencido-valor">—</div><div class="ind-sub" id="pag-vencido-sub">—</div></div>
+          <div class="ind-card"><div class="ind-label">Fornecedores</div><div class="ind-value" id="pag-fornecedores-valor">—</div><div class="ind-sub" id="pag-fornecedores-sub">—</div></div>
+          <div class="ind-card"><div class="ind-label">Próximo vencimento</div><div class="ind-value" id="pag-proximo-valor">—</div><div class="ind-sub" id="pag-proximo-sub">—</div></div>
+        </div>
       </div>
 
       <!-- BANCOS -->

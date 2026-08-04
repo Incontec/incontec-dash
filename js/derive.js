@@ -72,6 +72,37 @@ function computeReceberSummary(rows) {
   };
 }
 
+// contas_pagar has no "paid" flag -- every row is a pending obligation, so
+// status is purely a function of vencimento vs. today (unlike Contas a
+// Receber, which distinguishes Pago/Vencido/A vencer via StatusVen).
+function statusFromPagar(row) {
+  return row.vencimento && new Date(row.vencimento) < new Date() ? "Vencido" : "A Vencer";
+}
+
+function computePagarSummary(rows) {
+  const now = new Date();
+  let totalPagar = 0, totalVencido = 0, vencidosCount = 0;
+  const fornecedores = new Set();
+  let proximoVencimento = null;
+
+  rows.forEach(r => {
+    const valor = r.valor_pagar || 0;
+    totalPagar += valor;
+    if (r.nominal) fornecedores.add(r.nominal);
+
+    const venc = r.vencimento ? new Date(r.vencimento) : null;
+    if (!venc) return;
+    if (venc < now) {
+      totalVencido += valor;
+      vencidosCount++;
+    } else if (!proximoVencimento || venc < proximoVencimento.data) {
+      proximoVencimento = { data: venc, fornecedor: r.nominal, valor };
+    }
+  });
+
+  return { totalPagar, totalVencido, vencidosCount, fornecedoresUnicos: fornecedores.size, proximoVencimento };
+}
+
 const MES_LABEL = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
 
 function computePMR(rows) {
