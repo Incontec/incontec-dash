@@ -60,7 +60,7 @@ function renderDashboardCharts(state) {
         generateLabels: chart => chart.data.labels.map((label, i) => {
           const value = chart.data.datasets[0].data[i];
           const pct = bancoStats.totalPositivo ? Math.round(Math.max(value,0) / bancoStats.totalPositivo * 100) : 0;
-          return { text:`${label} (${pct}%)`, fillStyle:chart.data.datasets[0].backgroundColor[i], index:i };
+          return { text:`${label} (${pct}%)`, fillStyle:chart.data.datasets[0].backgroundColor[i], fontColor:'#7E9389', strokeStyle:'transparent', index:i };
         }) } },
         tooltip:{...TP, callbacks:{label:c=>fmtBRL(c.raw)}} } }
   });
