@@ -45,11 +45,18 @@ main { flex:1;display:flex;flex-direction:column;min-width:0; }
 .topbar-update-label { font-size:11px;color:var(--muted); }
 .topbar-update-value { font-size:12px;font-weight:500;color:var(--accent); }
 .topbar-title.ai-active { color:var(--accent); }
-.period-picker { display:flex;align-items:center;gap:7px;padding:7px 14px 7px 12px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);transition:border-color .12s; }
-.period-picker:focus-within { border-color:var(--accent); }
+.period-picker { position:relative; }
 .period-picker.hidden { display:none; }
+.period-trigger { display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:border-color .12s; }
+.period-trigger:hover, .period-picker.open .period-trigger { border-color:var(--accent); }
 .period-icon { width:14px;height:14px;color:var(--muted);flex-shrink:0;display:flex; }
-.period-select { font-size:12px;font-weight:500;padding:0;border:none;background:transparent;color:var(--text);outline:none;font-family:'Inter',sans-serif;cursor:pointer; }
+.period-chevron { width:12px;height:12px;color:var(--muted);flex-shrink:0;transition:transform .15s; }
+.period-picker.open .period-chevron { transform:rotate(180deg); }
+.period-menu { position:absolute;top:calc(100% + 6px);right:0;min-width:180px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:20; }
+.period-menu.hidden { display:none; }
+.period-option { display:block;width:100%;text-align:left;padding:8px 10px;border-radius:6px;background:transparent;border:none;color:var(--muted);font-size:12.5px;font-family:'Inter',sans-serif;cursor:pointer;transition:background .12s,color .12s; }
+.period-option:hover { background:var(--surface2);color:var(--text); }
+.period-option.active { background:var(--accent-dim);color:var(--accent);font-weight:500; }
 .ai-status-pill { display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:20px;background:rgba(111,227,166,.1);border:1px solid var(--accent-dim);color:var(--accent);font-size:12px;font-weight:500; }
 .ai-status-pill.hidden { display:none; }
 .ai-status-dot { width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(111,227,166,.2);animation:ai-pulse 2s ease-in-out infinite; }

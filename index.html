@@ -78,16 +78,20 @@
         <div class="topbar-sub" id="pageSubtitle">Visão consolidada de bancos e contas</div>
       </div>
       <div style="display:flex;align-items:center;gap:12px">
-        <div class="period-picker" id="periodPickerWrap">
-          <span class="period-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
-          <select class="period-select" id="periodFilter">
-            <option value="">Tudo</option>
-            <option value="year">Este ano</option>
-            <option value="12m">Últimos 12 meses</option>
-            <option value="6m">Últimos 6 meses</option>
-            <option value="3m">Últimos 3 meses</option>
-            <option value="month">Este mês</option>
-          </select>
+        <div class="period-picker" id="periodPicker">
+          <button type="button" class="period-trigger" id="periodTrigger">
+            <span class="period-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+            <span id="periodTriggerLabel">Todo o período</span>
+            <svg class="period-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="period-menu hidden" id="periodMenu">
+            <button type="button" class="period-option active" data-value="" data-label="Todo o período">Todo o período</button>
+            <button type="button" class="period-option" data-value="year" data-label="Este ano">Este ano</button>
+            <button type="button" class="period-option" data-value="12m" data-label="Últimos 12 meses">Últimos 12 meses</button>
+            <button type="button" class="period-option" data-value="6m" data-label="Últimos 6 meses">Últimos 6 meses</button>
+            <button type="button" class="period-option" data-value="3m" data-label="Últimos 3 meses">Últimos 3 meses</button>
+            <button type="button" class="period-option" data-value="month" data-label="Este mês">Este mês</button>
+          </div>
         </div>
         <div class="ai-status-pill hidden" id="aiStatusPill"><span class="ai-status-dot"></span>Assistente ativo</div>
         <div class="topbar-update">

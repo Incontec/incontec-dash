@@ -46,7 +46,7 @@ function setActive(label) {
   // data) -- swap it for a status pill there instead of showing a control
   // that would look active but silently do nothing.
   const isAI = label === "INCONTEC AI";
-  document.getElementById('periodPickerWrap').classList.toggle('hidden', isAI);
+  document.getElementById('periodPicker').classList.toggle('hidden', isAI);
   document.getElementById('aiStatusPill').classList.toggle('hidden', !isAI);
   document.getElementById('pageTitle').classList.toggle('ai-active', isAI);
 }
@@ -156,9 +156,34 @@ function renderAll(state) {
   setupExports(state);
 }
 
-function setupPeriodFilter() {
-  document.getElementById('periodFilter').addEventListener('change', e => {
-    renderAll(buildState(e.target.value));
+// Custom dropdown instead of a native <select> -- the browser's own option
+// list renders with OS-default (light) styling that can't be themed to
+// match the dark UI, so this builds the open/closed menu state by hand.
+let currentPeriod = '';
+
+function setupPeriodPicker() {
+  const wrap = document.getElementById('periodPicker');
+  const trigger = document.getElementById('periodTrigger');
+  const label = document.getElementById('periodTriggerLabel');
+  const menu = document.getElementById('periodMenu');
+
+  const close = () => { wrap.classList.remove('open'); menu.classList.add('hidden'); };
+  const open = () => { wrap.classList.add('open'); menu.classList.remove('hidden'); };
+
+  trigger.onclick = e => {
+    e.stopPropagation();
+    wrap.classList.contains('open') ? close() : open();
+  };
+  document.addEventListener('click', e => { if (!wrap.contains(e.target)) close(); });
+
+  menu.querySelectorAll('.period-option').forEach(btn => {
+    btn.onclick = () => {
+      currentPeriod = btn.dataset.value;
+      label.textContent = btn.dataset.label;
+      menu.querySelectorAll('.period-option').forEach(b => b.classList.toggle('active', b === btn));
+      close();
+      renderAll(buildState(currentPeriod));
+    };
   });
 }
 
@@ -169,10 +194,10 @@ async function loadAndRender() {
 
   rawData = { kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, contasPagar, bancoStats: computeBancoStats(bancos) };
 
-  setupPeriodFilter();
+  setupPeriodPicker();
   setupCustomReport();
   setupSettingsPage();
-  renderAll(buildState(document.getElementById('periodFilter').value));
+  renderAll(buildState(currentPeriod));
 
   setLastUpdated(new Date());
   document.getElementById('loadingOverlay').classList.add('hidden');
