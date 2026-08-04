@@ -44,8 +44,16 @@ main { flex:1;display:flex;flex-direction:column;min-width:0; }
 .topbar-update { text-align:right; }
 .topbar-update-label { font-size:11px;color:var(--muted); }
 .topbar-update-value { font-size:12px;font-weight:500;color:var(--accent); }
-.period-select { font-size:12px;font-weight:500;padding:4px 8px;border-radius:6px;background:var(--surface2);color:var(--text);border:1px solid var(--border);outline:none;font-family:'Inter',sans-serif;cursor:pointer; }
-.period-select:focus { border-color:var(--accent); }
+.topbar-title.ai-active { color:var(--accent); }
+.period-picker { display:flex;align-items:center;gap:7px;padding:7px 14px 7px 12px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);transition:border-color .12s; }
+.period-picker:focus-within { border-color:var(--accent); }
+.period-picker.hidden { display:none; }
+.period-icon { width:14px;height:14px;color:var(--muted);flex-shrink:0;display:flex; }
+.period-select { font-size:12px;font-weight:500;padding:0;border:none;background:transparent;color:var(--text);outline:none;font-family:'Inter',sans-serif;cursor:pointer; }
+.ai-status-pill { display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:20px;background:rgba(111,227,166,.1);border:1px solid var(--accent-dim);color:var(--accent);font-size:12px;font-weight:500; }
+.ai-status-pill.hidden { display:none; }
+.ai-status-dot { width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(111,227,166,.2);animation:ai-pulse 2s ease-in-out infinite; }
+@keyframes ai-pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
 .content { padding:24px;display:flex;flex-direction:column;gap:20px;overflow-y:auto;flex:1; }
 
 /* Pages */
@@ -269,6 +277,6 @@ canvas { display:block; }
 @keyframes toastIn { from { opacity:0; transform:translateX(16px); } to { opacity:1; transform:translateX(0); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .page.active, .toast { animation:none !important; }
+  .page.active, .toast, .ai-status-dot { animation:none !important; }
   .card, .ind-card, .chart-card { transition:none !important; }
 }

@@ -41,6 +41,14 @@ function setActive(label) {
   const nav = ALL_NAV.find(n => n.label === label);
   document.getElementById('pageTitle').textContent = label;
   document.getElementById('pageSubtitle').textContent = nav ? nav.subtitle : '';
+
+  // The period filter doesn't apply to the AI chat (it isn't fed filtered
+  // data) -- swap it for a status pill there instead of showing a control
+  // that would look active but silently do nothing.
+  const isAI = label === "INCONTEC AI";
+  document.getElementById('periodPickerWrap').classList.toggle('hidden', isAI);
+  document.getElementById('aiStatusPill').classList.toggle('hidden', !isAI);
+  document.getElementById('pageTitle').classList.toggle('ai-active', isAI);
 }
 
 function renderNavShell() {
