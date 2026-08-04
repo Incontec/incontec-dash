@@ -57,7 +57,7 @@ function renderReceberTable(rows) {
 
 function renderReceberSummaryCards(state) {
   const s = state.receber.summary;
-  document.getElementById('rec-total-valor').innerHTML = fmtBRLSigned(s.totalAberto);
+  document.getElementById('rec-total-valor').innerHTML = fmtBRLRed(s.totalAberto);
   document.getElementById('rec-total-sub').textContent = `${s.vencidosCount} título${s.vencidosCount===1?'':'s'} vencido${s.vencidosCount===1?'':'s'}`;
   document.getElementById('rec-clientes-valor').textContent = s.clientesUnicos;
   document.getElementById('rec-clientes-sub').textContent = `cliente${s.clientesUnicos===1?'':'s'} inadimplente${s.clientesUnicos===1?'':'s'}`;
