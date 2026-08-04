@@ -163,7 +163,7 @@ function renderIndicadoresCards(state) {
   if (pmr.avgDays !== null) {
     const d = document.createElement('div');
     d.className = 'ind-card';
-    d.innerHTML = `<div class="ind-label">Prazo Médio de Recebimento</div><div class="ind-value">${pmr.avgDays} d</div><div class="ind-sub">Calculado a partir de vw_inadimplencia</div>`;
+    d.innerHTML = `<div class="ind-label">Prazo Médio de Recebimento</div><div class="ind-value">${pmr.avgDays} d</div><div class="ind-sub">Da venda até o recebimento</div>`;
     indGrid.appendChild(d);
   }
   const note = document.createElement('div');

@@ -105,12 +105,30 @@ function computePagarSummary(rows) {
 
 const MES_LABEL = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
 
+// Only counts sales that were actually paid (a real Data Quitação) --
+// falling back to "today" for still-open receivables would measure how
+// overdue they currently are, not how long payment actually takes, which
+// skews the average toward whatever's oldest and unpaid rather than
+// reflecting real collection speed.
 function computePMR(rows) {
-  const withDays = rows
+  const pagas = rows.filter(r => r["Data Venda"] && r["Data Quitação"]);
+
+  // Some Data Quitação values are shared by an implausibly large batch of
+  // sales (e.g. 353 unrelated sales all "quitadas" on the same day) -- a
+  // sign of a bulk/system-migration write rather than real individual
+  // payment dates. Left in, a few such dates dominate the average. A small
+  // cluster (a handful to a few dozen sales settled around the same
+  // month-end due date) is normal and stays; only the extreme outliers,
+  // well beyond that range, are dropped.
+  const porData = new Map();
+  pagas.forEach(r => porData.set(r["Data Quitação"], (porData.get(r["Data Quitação"]) || 0) + 1));
+  const datasEmLote = new Set([...porData].filter(([, n]) => n > 30).map(([data]) => data));
+
+  const withDays = pagas
+    .filter(r => !datasEmLote.has(r["Data Quitação"]))
     .map(r => {
-      const start = r["Data Venda"] ? new Date(r["Data Venda"]) : null;
-      if (!start) return null;
-      const end = r["Data Quitação"] ? new Date(r["Data Quitação"]) : new Date();
+      const start = new Date(r["Data Venda"]);
+      const end = new Date(r["Data Quitação"]);
       const days = Math.round((end - start) / 86400000);
       return days >= 0 ? { start, days } : null;
     })

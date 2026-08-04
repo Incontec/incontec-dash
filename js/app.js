@@ -116,7 +116,10 @@ function buildState(periodKey) {
   const recebiveisFiltered = recebiveis.filter(r => inPeriod(r["Data Venda"], range));
   const kpis = computeKpisFiltered(resumoVendasRaw, fluxoCaixa, bancoStats.saldoTotal, range);
   const receberSummary = computeReceberSummary(recebiveisFiltered);
-  const pmr = computePMR(recebiveisFiltered);
+  // resumo_vendas (not vw_inadimplencia) -- PMR needs sales that were
+  // actually paid, with a real Data Quitação, which the delinquency view
+  // never has (every row there is unpaid by definition).
+  const pmr = computePMR(resumoVendasRaw.filter(r => inPeriod(r["Data Venda"], range)));
 
   // Contas a Pagar is forward-looking (bills not yet due) -- unlike sales/fluxo,
   // filtering it by a backward-looking period ("últimos 3 meses" etc.) would
