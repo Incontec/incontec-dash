@@ -36,22 +36,21 @@ function participacaoPct(saldo, bancoStats) {
 }
 
 function statusFromRecebivel(row) {
-  if (row.StatusVen === "Quitado") return "Pago";
-  if (row["Cliente Inadimplente"] === "Sim") return "Vencido";
-  return "A vencer";
+  return row["Cliente Inadimplente"] === "Sim" ? "Vencido" : "A vencer";
 }
 
-// vw_inadimplencia only contains delinquent sales (Cliente Inadimplente = "Sim"
-// for every row) — it's a delinquency ledger, not a full receivables aging report.
-// So the summary below reports what this source can honestly say: how much is
-// overdue, who's furthest behind, and how many distinct clients are affected.
+// `rows` here is every open receivable (vencido + a vencer) so the table can
+// show both, but these three summary cards are specifically about the overdue
+// subset -- their labels say "vencido"/"inadimplentes"/"atraso" -- so they
+// filter back down to that before totaling.
 function computeReceberSummary(rows) {
   const now = new Date();
+  const vencidos = rows.filter(r => r["Cliente Inadimplente"] === "Sim");
   let totalAberto = 0;
   const clientes = new Set();
   let maiorAtraso = null;
 
-  rows.forEach(r => {
+  vencidos.forEach(r => {
     const aReceber = r["Total a Receber"] || 0;
     totalAberto += aReceber;
     if (r.Cliente) clientes.add(r.Cliente);
@@ -66,7 +65,7 @@ function computeReceberSummary(rows) {
 
   return {
     totalAberto,
-    vencidosCount: rows.length,
+    vencidosCount: vencidos.length,
     clientesUnicos: clientes.size,
     maiorAtraso,
   };

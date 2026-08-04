@@ -20,7 +20,7 @@ const CR_SOURCES = {
     ],
   },
   recebiveis: {
-    label: "Recebíveis (Inadimplência)",
+    label: "Recebíveis (Contas a Receber)",
     dateField: "Data Venda",
     clienteField: "Cliente",
     getRows: () => rawData.recebiveis,
@@ -31,7 +31,7 @@ const CR_SOURCES = {
       { key: "Valor Venda", label: "Valor Vendido", currency: true },
       { key: "Valor Recebido", label: "Valor Recebido", currency: true },
       { key: "Total a Receber", label: "Total a Receber", currency: true },
-      { key: "StatusVen", label: "Status" },
+      { key: "Cliente Inadimplente", label: "Vencido" },
     ],
   },
   bancos: {

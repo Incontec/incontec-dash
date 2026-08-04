@@ -4,12 +4,14 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // table is (resumo_vendas alone has 2793) — paginate with .range() until a
 // page comes back short, so every KPI computed from this data is accurate
 // instead of silently truncated to the first 1000 rows.
-async function fetchView(view, select) {
+async function fetchView(view, select, filterFn) {
   const pageSize = 1000;
   let from = 0;
   let all = [];
   while (true) {
-    const { data, error } = await db.from(view).select(select || "*").range(from, from + pageSize - 1);
+    let query = db.from(view).select(select || "*");
+    if (filterFn) query = filterFn(query);
+    const { data, error } = await query.range(from, from + pageSize - 1);
     if (error) throw new Error(`Falha ao consultar ${view}: ${error.message}`);
     all = all.concat(data || []);
     if (!data || data.length < pageSize) break;
@@ -37,8 +39,15 @@ async function getFluxoMensal() {
   return rows.sort((a, b) => a.MonthNumber - b.MonthNumber);
 }
 
+// resumo_vendas filtered to StatusVen "Vendido" (sold, still owing a balance)
+// -- vw_inadimplencia only ever holds delinquent titles, so it couldn't show
+// receivables that are still within their term (not yet overdue).
 async function getRecebiveis() {
-  return fetchView("vw_inadimplencia");
+  return fetchView(
+    "resumo_vendas",
+    'Cliente,Obra,"Data Venda","Valor Venda","Valor Recebido","Total a Receber","Cliente Inadimplente",StatusVen',
+    q => q.eq("StatusVen", "Vendido")
+  );
 }
 
 async function getVendasObra() {
