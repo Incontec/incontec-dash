@@ -32,6 +32,7 @@ const CR_SOURCES = {
       { key: "Valor Recebido", label: "Valor Recebido", currency: true },
       { key: "Total a Receber", label: "Total a Receber", currency: true },
       { key: "Cliente Inadimplente", label: "Vencido" },
+      { key: "Valor_Atraso", label: "Valor em Atraso", currency: true },
     ],
   },
   bancos: {

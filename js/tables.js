@@ -38,6 +38,7 @@ function renderDashboardCards(state) {
     { label:"Total Vendido",     value:fmtBRLSigned(kpis.valor_vendido), ik:"bar" },
     { label:"Total a Receber",   value:fmtBRLRed(kpis.total_receber), ik:"gauge" },
     { label:"Banco Líder",       value:bancoStats.bancoLider ? bancoStats.bancoLider.Descri_banco : "—", ik:"trending", trend:bancoStats.concentracao },
+    { label:"Ticket Médio",      value:fmtBRLSigned(kpis.ticket_medio), ik:"wallet" },
   ]);
 }
 
@@ -152,6 +153,68 @@ function renderBancosTable(bancos, bancoStats) {
       <td style="min-width:120px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">${pct}%</div>
         <div class="prog-bar"><div class="prog-fill" style="width:${Math.max(pct,0)}%;background:${cor}"></div></div></td>`;
     bancosTbody.appendChild(tr);
+  });
+}
+
+// ── Fluxo de Caixa por Obra ────────────────────────────
+function renderFluxoObraTable(rows) {
+  const tbody = document.getElementById('fluxoobra-tbody');
+  tbody.innerHTML = '';
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.obra}</td><td style="color:var(--accent);white-space:nowrap">${fmtBRL(r.receber || 0)}</td><td style="color:#E38C8C;white-space:nowrap">${fmtBRL(r.pagar || 0)}</td>
+      <td style="font-weight:500;white-space:nowrap">${fmtBRLSigned(r.saldo || 0)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── Vendas por Empresa ─────────────────────────────────
+function renderVendasEmpresaTable(rows) {
+  const tbody = document.getElementById('vendasempresa-tbody');
+  tbody.innerHTML = '';
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.Empresa}</td><td style="color:var(--muted)">${r.quantidade_vendas}</td><td style="font-weight:500;color:var(--accent)">${fmtBRL(r.valor_vendido || 0)}</td>
+      <td style="color:var(--accent)">${fmtBRL(r.valor_recebido || 0)}</td><td style="color:#E38C8C">${fmtBRL(r.total_receber || 0)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── Top Clientes ───────────────────────────────────────
+function renderTopClientesTable(rows) {
+  const tbody = document.getElementById('topclientes-tbody');
+  tbody.innerHTML = '';
+  rows.forEach(r => {
+    const cor = r.saldo > 0 ? '#E38C8C' : '#6FE3A6';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.Cliente}</td><td style="font-weight:500;color:var(--accent)">${fmtBRL(r.valor_vendido || 0)}</td>
+      <td style="color:var(--accent)">${fmtBRL(r.valor_recebido || 0)}</td><td style="color:${cor}">${fmtBRL(r.saldo || 0)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── Bancos: per-account detail ─────────────────────────
+function renderBancosDetalhadoTable(rows) {
+  const tbody = document.getElementById('bancosdetalhe-tbody');
+  tbody.innerHTML = '';
+  rows.forEach(r => {
+    const cor = colorForBank(r.banco);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><span class="banco-dot" style="background:${cor}"></span>${r.banco}</td><td style="color:var(--muted)">${r.conta || '—'}</td>
+      <td style="font-weight:500">${fmtBRLSigned(r.saldo || 0)}</td><td style="color:var(--muted)">${r.data_saldo ? fmtDateBR(r.data_saldo) : '—'}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── Fluxo de Caixa por Pessoa ───────────────────────────
+function renderFluxoPessoaTable(rows) {
+  const tbody = document.getElementById('fluxopessoa-tbody');
+  tbody.innerHTML = '';
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.pessoa}</td><td style="color:var(--accent);white-space:nowrap">${fmtBRL(r.receber || 0)}</td><td style="color:#E38C8C;white-space:nowrap">${fmtBRL(r.pagar || 0)}</td>
+      <td style="font-weight:500;white-space:nowrap">${fmtBRLSigned(r.saldo || 0)}</td>`;
+    tbody.appendChild(tr);
   });
 }
 

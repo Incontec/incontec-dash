@@ -17,7 +17,7 @@ function renderReportLog() {
   const log = readReportLog();
   tbody.innerHTML = log.length
     ? log.map(r => `<tr><td>${r.nome}</td><td style="color:var(--muted)">${r.formato}</td><td style="color:var(--muted)">${new Date(r.geradoEm).toLocaleString('pt-BR')}</td></tr>`).join('')
-    : `<tr><td colspan="3" style="color:var(--muted)">Nenhuma exportação ainda.</td></tr>`;
+    : `<tr><td colspan="3" style="color:var(--muted);text-align:center;padding:28px 16px">Nenhuma exportação ainda. Gere um relatório acima para começar.</td></tr>`;
 }
 
 function exportExtratoCSV(bancos) {

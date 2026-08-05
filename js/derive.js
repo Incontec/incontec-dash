@@ -51,14 +51,18 @@ function computeReceberSummary(rows) {
   let maiorAtraso = null;
 
   vencidos.forEach(r => {
-    const aReceber = r["Total a Receber"] || 0;
-    totalAberto += aReceber;
+    // Valor_Atraso (not Total a Receber) -- the ERP's own figure for the
+    // portion actually past due. Total a Receber is the full remaining
+    // balance, including installments not yet due, which overstated this
+    // card by ~2.6x (R$97M vs the real R$37M) before this fix.
+    const emAtraso = r.Valor_Atraso || 0;
+    totalAberto += emAtraso;
     if (r.Cliente) clientes.add(r.Cliente);
 
     if (r["Data Venda"]) {
       const dias = Math.round((now - new Date(r["Data Venda"])) / 86400000);
       if (!maiorAtraso || dias > maiorAtraso.dias) {
-        maiorAtraso = { cliente: r.Cliente, dias, valor: aReceber };
+        maiorAtraso = { cliente: r.Cliente, dias, valor: emAtraso };
       }
     }
   });
@@ -110,7 +114,13 @@ const MES_LABEL = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","
 // skews the average toward whatever's oldest and unpaid rather than
 // reflecting real collection speed.
 function computePMR(rows) {
-  const pagas = rows.filter(r => r["Data Venda"] && r["Data Quitação"]);
+  const hoje = new Date();
+  // A non-null Data Quitação doesn't guarantee the sale was actually paid --
+  // ~40 rows have it set to a date years in the future (a contractual
+  // payoff/installment-plan end date, not an actual payment event). Counting
+  // those as "already collected" pulled the average from 343 real days up to
+  // 399, so they're excluded here the same way unpaid-open receivables are.
+  const pagas = rows.filter(r => r["Data Venda"] && r["Data Quitação"] && new Date(r["Data Quitação"]) <= hoje);
 
   // Some Data Quitação values are shared by an implausibly large batch of
   // sales (e.g. 353 unrelated sales all "quitadas" on the same day) -- a
@@ -188,12 +198,17 @@ function inPeriod(dateStr, range) {
 function computeKpisFiltered(resumoVendasRaw, fluxoCaixaRows, saldoBancos, range) {
   const vendas = resumoVendasRaw.filter(r => inPeriod(r["Data Venda"], range));
   const fluxo = fluxoCaixaRows.filter(r => inPeriod(r.Data, range));
+  const valorVendido = vendas.reduce((s, r) => s + (r["Valor Venda"] || 0), 0);
   return {
     total_vendas: vendas.length,
-    valor_vendido: vendas.reduce((s, r) => s + (r["Valor Venda"] || 0), 0),
+    valor_vendido: valorVendido,
     valor_recebido: vendas.reduce((s, r) => s + (r["Valor Recebido"] || 0), 0),
     total_receber: vendas.reduce((s, r) => s + (r["Total a Receber"] || 0), 0),
     saldo_bancos: saldoBancos,
     total_fluxo: fluxo.length,
+    // Average value per sale -- not "per unit": Qtd in resumo_vendas turned
+    // out to be a row sequence number (1..2793, matching the table's row
+    // count exactly), not a real quantity, so it can't back a per-unit ticket.
+    ticket_medio: vendas.length ? valorVendido / vendas.length : 0,
   };
 }

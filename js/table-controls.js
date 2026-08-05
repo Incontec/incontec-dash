@@ -206,3 +206,179 @@ function setupBancosTable(state) {
 
   render();
 }
+
+// ── Fluxo por Obra: search + sort + pagination ────────────────────────
+function setupFluxoObraTable(state) {
+  const pageEl = document.getElementById('page-Fluxo de Caixa');
+  const tableEl = pageEl.querySelector('#fluxoobra-tbody').closest('.banco-table');
+  const pageSize = 15;
+  let query = '', sortKey = 'saldo', sortDir = 'desc', page = 1;
+
+  function filtered() {
+    if (!query) return state.fluxoObra;
+    const q = query.toLowerCase();
+    return state.fluxoObra.filter(r => (r.obra || '').toLowerCase().includes(q));
+  }
+
+  function render() {
+    const rows = sortRows(filtered(), sortKey, sortDir, textAccessor);
+    const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+    page = Math.min(page, totalPages);
+    renderFluxoObraTable(paginate(rows, page, pageSize));
+    renderPagination(document.getElementById('fluxoobra-pagination'), { page, totalPages, onPageChange: p => { page = p; render(); } });
+    updateSortHeaders(tableEl, sortKey, sortDir);
+  }
+
+  document.getElementById('fluxoobra-search').oninput = e => { query = e.target.value; page = 1; render(); };
+
+  tableEl.querySelectorAll('[data-sort]').forEach(th => {
+    th.onclick = () => {
+      const key = th.dataset.sort;
+      if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      else { sortKey = key; sortDir = 'asc'; }
+      page = 1; render();
+    };
+  });
+
+  render();
+}
+
+// ── Bancos: per-account detail, search + sort + pagination ─────────────
+function setupBancosDetalhadoTable(state) {
+  const tableEl = document.getElementById('bancosdetalhe-tbody').closest('.banco-table');
+  const pageSize = 15;
+  let query = '', sortKey = 'banco', sortDir = 'asc', page = 1;
+
+  function filtered() {
+    if (!query) return state.bancosDetalhado;
+    const q = query.toLowerCase();
+    return state.bancosDetalhado.filter(r => (r.banco || '').toLowerCase().includes(q) || (r.conta || '').toLowerCase().includes(q));
+  }
+
+  function render() {
+    const rows = sortRows(filtered(), sortKey, sortDir, textAccessor);
+    const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+    page = Math.min(page, totalPages);
+    renderBancosDetalhadoTable(paginate(rows, page, pageSize));
+    renderPagination(document.getElementById('bancosdetalhe-pagination'), { page, totalPages, onPageChange: p => { page = p; render(); } });
+    updateSortHeaders(tableEl, sortKey, sortDir);
+  }
+
+  document.getElementById('bancosdetalhe-search').oninput = e => { query = e.target.value; page = 1; render(); };
+
+  tableEl.querySelectorAll('[data-sort]').forEach(th => {
+    th.onclick = () => {
+      const key = th.dataset.sort;
+      if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      else { sortKey = key; sortDir = 'asc'; }
+      page = 1; render();
+    };
+  });
+
+  render();
+}
+
+// ── Fluxo por Pessoa: search + sort + pagination ────────────────────────
+function setupFluxoPessoaTable(state) {
+  const tableEl = document.getElementById('fluxopessoa-tbody').closest('.banco-table');
+  const pageSize = 15;
+  let query = '', sortKey = 'saldo', sortDir = 'desc', page = 1;
+
+  function filtered() {
+    if (!query) return state.fluxoPessoa;
+    const q = query.toLowerCase();
+    return state.fluxoPessoa.filter(r => (r.pessoa || '').toLowerCase().includes(q));
+  }
+
+  function render() {
+    const rows = sortRows(filtered(), sortKey, sortDir, textAccessor);
+    const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+    page = Math.min(page, totalPages);
+    renderFluxoPessoaTable(paginate(rows, page, pageSize));
+    renderPagination(document.getElementById('fluxopessoa-pagination'), { page, totalPages, onPageChange: p => { page = p; render(); } });
+    updateSortHeaders(tableEl, sortKey, sortDir);
+  }
+
+  document.getElementById('fluxopessoa-search').oninput = e => { query = e.target.value; page = 1; render(); };
+
+  tableEl.querySelectorAll('[data-sort]').forEach(th => {
+    th.onclick = () => {
+      const key = th.dataset.sort;
+      if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      else { sortKey = key; sortDir = 'asc'; }
+      page = 1; render();
+    };
+  });
+
+  render();
+}
+
+// ── Vendas por Empresa: search + sort + pagination ─────────────────────
+function setupVendasEmpresaTable(state) {
+  const tableEl = document.getElementById('vendasempresa-tbody').closest('.banco-table');
+  const pageSize = 15;
+  let query = '', sortKey = 'valor_vendido', sortDir = 'desc', page = 1;
+
+  function filtered() {
+    if (!query) return state.vendasEmpresa;
+    const q = query.toLowerCase();
+    return state.vendasEmpresa.filter(r => (r.Empresa || '').toLowerCase().includes(q));
+  }
+
+  function render() {
+    const rows = sortRows(filtered(), sortKey, sortDir, textAccessor);
+    const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+    page = Math.min(page, totalPages);
+    renderVendasEmpresaTable(paginate(rows, page, pageSize));
+    renderPagination(document.getElementById('vendasempresa-pagination'), { page, totalPages, onPageChange: p => { page = p; render(); } });
+    updateSortHeaders(tableEl, sortKey, sortDir);
+  }
+
+  document.getElementById('vendasempresa-search').oninput = e => { query = e.target.value; page = 1; render(); };
+
+  tableEl.querySelectorAll('[data-sort]').forEach(th => {
+    th.onclick = () => {
+      const key = th.dataset.sort;
+      if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      else { sortKey = key; sortDir = 'asc'; }
+      page = 1; render();
+    };
+  });
+
+  render();
+}
+
+// ── Top Clientes: search + sort + pagination ────────────────────────────
+function setupTopClientesTable(state) {
+  const tableEl = document.getElementById('topclientes-tbody').closest('.banco-table');
+  const pageSize = 15;
+  let query = '', sortKey = 'valor_vendido', sortDir = 'desc', page = 1;
+
+  function filtered() {
+    if (!query) return state.topClientes;
+    const q = query.toLowerCase();
+    return state.topClientes.filter(r => (r.Cliente || '').toLowerCase().includes(q));
+  }
+
+  function render() {
+    const rows = sortRows(filtered(), sortKey, sortDir, textAccessor);
+    const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+    page = Math.min(page, totalPages);
+    renderTopClientesTable(paginate(rows, page, pageSize));
+    renderPagination(document.getElementById('topclientes-pagination'), { page, totalPages, onPageChange: p => { page = p; render(); } });
+    updateSortHeaders(tableEl, sortKey, sortDir);
+  }
+
+  document.getElementById('topclientes-search').oninput = e => { query = e.target.value; page = 1; render(); };
+
+  tableEl.querySelectorAll('[data-sort]').forEach(th => {
+    th.onclick = () => {
+      const key = th.dataset.sort;
+      if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      else { sortKey = key; sortDir = 'asc'; }
+      page = 1; render();
+    };
+  });
+
+  render();
+}

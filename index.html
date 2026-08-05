@@ -131,6 +131,39 @@
           <div class="chart-title" id="fluxo-chart-title">Saldo Diário</div>
           <div class="chart-wrap"><canvas id="fluxoChart"></canvas></div>
         </div>
+        <div class="chart-title">Fluxo de Caixa por Obra</div>
+        <div class="table-controls">
+          <input class="table-search" id="fluxoobra-search" placeholder="Buscar obra..." />
+        </div>
+        <div class="banco-table">
+          <table>
+            <thead><tr>
+              <th data-sort="obra">Obra</th>
+              <th data-sort="receber">Receber</th>
+              <th data-sort="pagar">Pagar</th>
+              <th data-sort="saldo">Saldo</th>
+            </tr></thead>
+            <tbody id="fluxoobra-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="fluxoobra-pagination"></div>
+
+        <div class="chart-title">Fluxo de Caixa por Cliente</div>
+        <div class="table-controls">
+          <input class="table-search" id="fluxopessoa-search" placeholder="Buscar cliente..." />
+        </div>
+        <div class="banco-table">
+          <table>
+            <thead><tr>
+              <th data-sort="pessoa">Cliente</th>
+              <th data-sort="receber">Receber</th>
+              <th data-sort="pagar">Pagar</th>
+              <th data-sort="saldo">Saldo</th>
+            </tr></thead>
+            <tbody id="fluxopessoa-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="fluxopessoa-pagination"></div>
       </div>
 
       <!-- CONTAS A RECEBER -->
@@ -208,36 +241,62 @@
           <div class="chart-title">Saldo por Banco</div>
           <div class="chart-wrap"><canvas id="bancosChart"></canvas></div>
         </div>
+        <div class="chart-title">Contas Detalhadas</div>
+        <div class="table-controls">
+          <input class="table-search" id="bancosdetalhe-search" placeholder="Buscar banco ou conta..." />
+        </div>
+        <div class="banco-table">
+          <table>
+            <thead><tr>
+              <th data-sort="banco">Banco</th>
+              <th data-sort="conta">Conta</th>
+              <th data-sort="saldo">Saldo</th>
+              <th data-sort="data_saldo">Atualizado em</th>
+            </tr></thead>
+            <tbody id="bancosdetalhe-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="bancosdetalhe-pagination"></div>
       </div>
 
       <!-- RELATÓRIOS -->
       <div class="page" id="page-Relatórios">
-        <div class="ind-grid">
-          <div class="ind-card" id="rep-extrato" style="cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-            <div class="card-icon" style="margin-bottom:12px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></div>
-            <div class="ind-label">Extrato Consolidado</div>
-            <div style="font-size:13px;font-weight:500">Exportar CSV</div>
-            <div class="ind-sub">Saldo de contas · todas as datas</div>
+        <div class="chart-title">Gerar Relatório</div>
+        <div class="report-grid">
+          <div class="report-card" id="rep-extrato">
+            <div class="report-card-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></div>
+            <div class="report-card-body">
+              <div class="report-card-title">Extrato Consolidado</div>
+              <div class="report-card-desc">Saldo de contas · todas as datas</div>
+            </div>
+            <div class="report-card-format">CSV</div>
           </div>
-          <div class="ind-card" id="rep-dre" style="cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-            <div class="card-icon" style="margin-bottom:12px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-            <div class="ind-label">DRE Gerencial</div>
-            <div style="font-size:13px;font-weight:500">Exportar PDF</div>
-            <div class="ind-sub">Vendas x Recebimentos · por obra</div>
+          <div class="report-card" id="rep-dre">
+            <div class="report-card-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            <div class="report-card-body">
+              <div class="report-card-title">DRE Gerencial</div>
+              <div class="report-card-desc">Vendas x Recebimentos · por obra</div>
+            </div>
+            <div class="report-card-format">PDF</div>
           </div>
-          <div class="ind-card" id="rep-posicao" style="cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-            <div class="card-icon" style="margin-bottom:12px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
-            <div class="ind-label">Posição de Caixa</div>
-            <div style="font-size:13px;font-weight:500">Exportar Excel</div>
-            <div class="ind-sub">Por banco · data de hoje</div>
+          <div class="report-card" id="rep-posicao">
+            <div class="report-card-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+            <div class="report-card-body">
+              <div class="report-card-title">Posição de Caixa</div>
+              <div class="report-card-desc">Por banco · data de hoje</div>
+            </div>
+            <div class="report-card-format">Excel</div>
           </div>
-          <div class="ind-card" id="rep-custom" style="cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-            <div class="card-icon" style="margin-bottom:12px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
-            <div class="ind-label">Relatório Personalizado</div>
-            <div style="font-size:13px;font-weight:500">Escolher dados e gerar</div>
-            <div class="ind-sub">Fonte, cliente, período, colunas e formato</div>
+          <div class="report-card" id="rep-custom">
+            <div class="report-card-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
+            <div class="report-card-body">
+              <div class="report-card-title">Relatório Personalizado</div>
+              <div class="report-card-desc">Fonte, cliente, período, colunas e formato</div>
+            </div>
+            <div class="report-card-format">Escolher</div>
           </div>
         </div>
+        <div class="chart-title">Histórico de Exportações</div>
         <div class="banco-table">
           <table>
             <thead><tr><th>Relatório</th><th>Formato</th><th>Gerado às</th></tr></thead>
@@ -277,6 +336,7 @@
                 <input type="date" id="cr-ate" class="cr-input">
               </div>
             </div>
+            <div class="modal-divider"></div>
             <div class="form-group">
               <label>Colunas</label>
               <div id="cr-colunas" class="cr-checkboxes"></div>
@@ -303,6 +363,40 @@
         <div class="charts-grid">
           <div class="chart-card"><div class="chart-title">Prazo Médio de Recebimento (dias)</div><div class="chart-wrap"><canvas id="pmrChart"></canvas></div></div>
         </div>
+        <div class="chart-title">Vendas por Empresa</div>
+        <div class="table-controls">
+          <input class="table-search" id="vendasempresa-search" placeholder="Buscar empresa..." />
+        </div>
+        <div class="banco-table">
+          <table>
+            <thead><tr>
+              <th data-sort="Empresa">Empresa</th>
+              <th data-sort="quantidade_vendas">Vendas</th>
+              <th data-sort="valor_vendido">Valor Vendido</th>
+              <th data-sort="valor_recebido">Valor Recebido</th>
+              <th data-sort="total_receber">A Receber</th>
+            </tr></thead>
+            <tbody id="vendasempresa-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="vendasempresa-pagination"></div>
+
+        <div class="chart-title">Top Clientes</div>
+        <div class="table-controls">
+          <input class="table-search" id="topclientes-search" placeholder="Buscar cliente..." />
+        </div>
+        <div class="banco-table">
+          <table>
+            <thead><tr>
+              <th data-sort="Cliente">Cliente</th>
+              <th data-sort="valor_vendido">Valor Vendido</th>
+              <th data-sort="valor_recebido">Valor Recebido</th>
+              <th data-sort="saldo">Saldo</th>
+            </tr></thead>
+            <tbody id="topclientes-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="topclientes-pagination"></div>
       </div>
 
       <!-- INCONTEC AI -->

@@ -45,7 +45,7 @@ async function getFluxoMensal() {
 async function getRecebiveis() {
   return fetchView(
     "resumo_vendas",
-    'Cliente,Obra,"Data Venda","Valor Venda","Valor Recebido","Total a Receber","Cliente Inadimplente",StatusVen',
+    'Cliente,Obra,"Data Venda","Valor Venda","Valor Recebido","Total a Receber","Cliente Inadimplente",Valor_Atraso,StatusVen',
     q => q.eq("StatusVen", "Vendido")
   );
 }
@@ -55,12 +55,46 @@ async function getVendasObra() {
   return rows.sort((a, b) => b.valor_vendido - a.valor_vendido);
 }
 
+// Aggregated server-side (view groups the 17k-row raw fluxo_caixa table by
+// Obra) -- fetching the raw table client-side just to sum it in JS would
+// mean paginating through every transaction for no benefit.
+async function getFluxoObra() {
+  const rows = await fetchView("vw_fluxo_obra");
+  return rows.sort((a, b) => b.saldo - a.saldo);
+}
+
+async function getVendasEmpresa() {
+  const rows = await fetchView("vw_vendas_empresa");
+  return rows.sort((a, b) => b.valor_vendido - a.valor_vendido);
+}
+
+async function getTopClientes() {
+  const rows = await fetchView("vw_top_clientes");
+  return rows.sort((a, b) => b.valor_vendido - a.valor_vendido);
+}
+
 // Raw (per-sale) rows with their own date, used for the period filter —
 // vw_kpis is a single pre-aggregated row with no date to filter by. Also
 // doubles as the "Vendas" source for the custom report builder, hence the
 // extra Cliente/Obra/status columns beyond what the period filter itself needs.
 async function getResumoVendasRaw() {
   return fetchView("resumo_vendas", 'Cliente,Obra,"Data Venda","Valor Venda","Valor Recebido","Total a Receber",StatusVen,"Data Quitação"');
+}
+
+// Per-account detail behind vw_bancos (which only totals by bank name) --
+// same latest-snapshot-per-account data, just not collapsed, so the Bancos
+// page can show individual accounts and how fresh each balance is.
+async function getBancosDetalhado() {
+  const rows = await fetchView("vw_bancos_detalhado");
+  return rows.sort((a, b) => (a.banco || '').localeCompare(b.banco || '') || b.saldo - a.saldo);
+}
+
+// Same shape as getFluxoObra but grouped by client instead of project --
+// 1400+ rows, so this leans on the table's search/pagination rather than
+// being skimmable at a glance.
+async function getFluxoPessoa() {
+  const rows = await fetchView("vw_fluxo_pessoa");
+  return rows.sort((a, b) => b.saldo - a.saldo);
 }
 
 // contas_pagar holds only open/pending bills (that's what the ERP query

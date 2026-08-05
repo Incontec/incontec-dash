@@ -110,7 +110,7 @@ let rawData = null;
 
 function buildState(periodKey) {
   const range = getPeriodRange(periodKey);
-  const { bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, bancoStats, contasPagar } = rawData;
+  const { bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, bancoStats, contasPagar, fluxoObra, vendasEmpresa, topClientes, bancosDetalhado, fluxoPessoa } = rawData;
 
   const fluxoCaixaFiltered = fluxoCaixa.filter(r => inPeriod(r.Data, range));
   const recebiveisFiltered = recebiveis.filter(r => inPeriod(r["Data Venda"], range));
@@ -131,7 +131,7 @@ function buildState(periodKey) {
     fluxoCaixa: fluxoCaixaFiltered, fluxoMensal,
     receber: { rows: recebiveisFiltered, summary: receberSummary },
     pagar: { rows: contasPagar, summary: pagarSummary },
-    pmr, vendasObra,
+    pmr, vendasObra, fluxoObra, vendasEmpresa, topClientes, bancosDetalhado, fluxoPessoa,
   };
 }
 
@@ -140,6 +140,8 @@ function renderAll(state) {
   renderDashboardHero(state);
   renderDashboardCards(state);
   renderFluxoPage(state);
+  setupFluxoObraTable(state);
+  setupFluxoPessoaTable(state);
   renderReceberBanner(state);
   renderReceberSummaryCards(state);
   setupReceberTable(state);
@@ -148,7 +150,10 @@ function renderAll(state) {
   setupPagarTable(state);
   renderBancosCards(state);
   setupBancosTable(state);
+  setupBancosDetalhadoTable(state);
   renderIndicadoresCards(state);
+  setupVendasEmpresaTable(state);
+  setupTopClientesTable(state);
 
   initChartDefaults();
   renderDashboardCharts(state);
@@ -192,11 +197,12 @@ function setupPeriodPicker() {
 }
 
 async function loadAndRender() {
-  const [kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, contasPagar] = await Promise.all([
+  const [kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, contasPagar, fluxoObra, vendasEmpresa, topClientes, bancosDetalhado, fluxoPessoa] = await Promise.all([
     getKpis(), getBancos(), getFluxoCaixa(), getFluxoMensal(), getRecebiveis(), getVendasObra(), getResumoVendasRaw(), getContasPagar(),
+    getFluxoObra(), getVendasEmpresa(), getTopClientes(), getBancosDetalhado(), getFluxoPessoa(),
   ]);
 
-  rawData = { kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, contasPagar, bancoStats: computeBancoStats(bancos) };
+  rawData = { kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, contasPagar, fluxoObra, vendasEmpresa, topClientes, bancosDetalhado, fluxoPessoa, bancoStats: computeBancoStats(bancos) };
 
   setupPeriodPicker();
   setupCustomReport();
