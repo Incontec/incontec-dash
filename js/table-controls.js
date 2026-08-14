@@ -347,38 +347,3 @@ function setupVendasEmpresaTable(state) {
 
   render();
 }
-
-// ── Top Clientes: search + sort + pagination ────────────────────────────
-function setupTopClientesTable(state) {
-  const tableEl = document.getElementById('topclientes-tbody').closest('.banco-table');
-  const pageSize = 15;
-  let query = '', sortKey = 'valor_vendido', sortDir = 'desc', page = 1;
-
-  function filtered() {
-    if (!query) return state.topClientes;
-    const q = query.toLowerCase();
-    return state.topClientes.filter(r => (r.Cliente || '').toLowerCase().includes(q));
-  }
-
-  function render() {
-    const rows = sortRows(filtered(), sortKey, sortDir, textAccessor);
-    const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
-    page = Math.min(page, totalPages);
-    renderTopClientesTable(paginate(rows, page, pageSize));
-    renderPagination(document.getElementById('topclientes-pagination'), { page, totalPages, onPageChange: p => { page = p; render(); } });
-    updateSortHeaders(tableEl, sortKey, sortDir);
-  }
-
-  document.getElementById('topclientes-search').oninput = e => { query = e.target.value; page = 1; render(); };
-
-  tableEl.querySelectorAll('[data-sort]').forEach(th => {
-    th.onclick = () => {
-      const key = th.dataset.sort;
-      if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-      else { sortKey = key; sortDir = 'asc'; }
-      page = 1; render();
-    };
-  });
-
-  render();
-}

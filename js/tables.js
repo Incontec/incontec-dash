@@ -47,26 +47,26 @@ function renderReceberBanner(state) {
   const { summary } = state.receber;
   document.getElementById('banner-receber').innerHTML = `
     <span style="color:var(--accent);flex-shrink:0;margin-top:2px;width:18px;height:18px">${I.arrowDown}</span>
-    <span><span class="hi">Contas a Receber:</span> Total em aberto de <span class="val">${fmtBRLRed(summary.totalAberto)}</span>.
+    <span><span class="hi">Contas a Receber:</span> Total em aberto de <span class="val">${fmtBRLRed(summary.totalEmAberto)}</span>.
     <span class="warn">${summary.vencidosCount} título${summary.vencidosCount===1?'':'s'} vencido${summary.vencidosCount===1?'':'s'}</span> aguardando cobrança.</span>`;
 }
 
 function renderReceberTable(rows) {
-  const statusColor = s => s==="Vencido" ? "#E38C8C" : s==="Pago" ? "#6FE3A6" : "#E3C26A";
+  const statusColor = s => s==="Vencido" ? "#E38C8C" : s==="Pago" ? "#6FE3A6" : "#6AA9E3";
   const recTbody = document.getElementById('receber-tbody');
   recTbody.innerHTML = '';
   rows.forEach(r => {
     const status = statusFromRecebivel(r);
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r.Cliente}</td><td style="color:var(--muted)">${r.Obra}</td><td style="color:var(--muted)">${r["Data Venda"] || '—'}</td><td style="font-weight:500;color:#E38C8C">${fmtBRL(r["Total a Receber"] || 0)}</td>
-      <td><span style="font-size:11px;padding:2px 8px;border-radius:4px;background:${statusColor(status)}22;color:${statusColor(status)}">${status}</span></td>`;
+    tr.innerHTML = `<td>${r.Cliente}</td><td style="color:var(--muted)">${r.Obra}</td><td style="color:var(--muted)">${r["Data Venda"] || '—'}</td><td style="font-weight:500;color:${statusColor(status)}">${fmtBRL(r["Total a Receber"] || 0)}</td>
+      <td style="white-space:nowrap"><span style="font-size:11px;padding:2px 8px;border-radius:4px;white-space:nowrap;background:${statusColor(status)}22;color:${statusColor(status)}">${status}</span></td>`;
     recTbody.appendChild(tr);
   });
 }
 
 function renderReceberSummaryCards(state) {
   const s = state.receber.summary;
-  document.getElementById('rec-total-valor').innerHTML = fmtBRLRed(s.totalAberto);
+  document.getElementById('rec-total-valor').innerHTML = fmtBRLRed(s.totalVencido);
   document.getElementById('rec-total-sub').textContent = `${s.vencidosCount} título${s.vencidosCount===1?'':'s'} vencido${s.vencidosCount===1?'':'s'}`;
   document.getElementById('rec-clientes-valor').textContent = s.clientesUnicos;
   document.getElementById('rec-clientes-sub').textContent = `cliente${s.clientesUnicos===1?'':'s'} inadimplente${s.clientesUnicos===1?'':'s'}`;
@@ -84,14 +84,14 @@ function renderPagarBanner(state) {
 }
 
 function renderPagarTable(rows) {
-  const statusColor = s => s === "Vencido" ? "#E38C8C" : "#E3C26A";
+  const statusColor = s => s === "Vencido" ? "#E38C8C" : "#6AA9E3";
   const tbody = document.getElementById('pagar-tbody');
   tbody.innerHTML = '';
   rows.forEach(r => {
     const status = statusFromPagar(r);
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r.nominal || '—'}</td><td style="color:var(--muted)">${r.obra || '—'}</td><td style="color:var(--muted)">${r.vencimento ? r.vencimento.slice(0,10) : '—'}</td><td style="font-weight:500;color:#E38C8C">${fmtBRL(r.valor_pagar || 0)}</td>
-      <td><span style="font-size:11px;padding:2px 8px;border-radius:4px;background:${statusColor(status)}22;color:${statusColor(status)}">${status}</span></td>`;
+    tr.innerHTML = `<td>${r.nominal || '—'}</td><td style="color:var(--muted)">${r.obra || '—'}</td><td style="color:var(--muted)">${r.vencimento ? r.vencimento.slice(0,10) : '—'}</td><td style="font-weight:500;color:${statusColor(status)}">${fmtBRL(r.valor_pagar || 0)}</td>
+      <td style="white-space:nowrap"><span style="font-size:11px;padding:2px 8px;border-radius:4px;white-space:nowrap;background:${statusColor(status)}22;color:${statusColor(status)}">${status}</span></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -113,19 +113,25 @@ function renderFluxoPage(state) {
   const saidas = fluxoCaixa.map(d => Math.abs(d.pagar || 0));
   const totalEntradas = entradas.reduce((a,b)=>a+b, 0);
   const totalSaidas = saidas.reduce((a,b)=>a+b, 0);
+  // Média diária still divides by the count of days that actually had
+  // movement (not the full calendar span) so weekends/no-activity days
+  // don't dilute the average -- only the label shown to the user changes,
+  // from that raw count to the human-readable date range it spans.
   const dias = fluxoCaixa.length;
+  const brDate = iso => iso.split('-').reverse().join('/');
+  const periodo = dias ? `${brDate(fluxoCaixa[0].Data)} a ${brDate(fluxoCaixa[dias-1].Data)}` : '—';
 
   document.getElementById('banner-fluxo').innerHTML = `
     <span style="color:var(--accent);flex-shrink:0;margin-top:2px;width:18px;height:18px">${I.wallet}</span>
-    <span><span class="hi">Fluxo de Caixa:</span> saldo atual de <span class="val">${fmtBRLSigned(fluxoCaixa.length ? fluxoCaixa[fluxoCaixa.length-1].saldo_atual : 0)}</span> ao longo de ${dias} dias com dados.</span>`;
+    <span><span class="hi">Fluxo de Caixa:</span> saldo atual de <span class="val">${fmtBRLSigned(fluxoCaixa.length ? fluxoCaixa[fluxoCaixa.length-1].saldo_atual : 0)}</span>, no período de ${periodo}.</span>`;
 
   document.getElementById('fluxo-entradas-total').textContent = fmtBRL(totalEntradas);
   document.getElementById('fluxo-entradas-media').textContent = fmtBRL(dias ? totalEntradas/dias : 0);
-  document.getElementById('fluxo-entradas-dias').textContent = dias;
+  document.getElementById('fluxo-entradas-dias').textContent = periodo;
 
   document.getElementById('fluxo-saidas-total').textContent = fmtBRL(totalSaidas);
   document.getElementById('fluxo-saidas-media').textContent = fmtBRL(dias ? totalSaidas/dias : 0);
-  document.getElementById('fluxo-saidas-dias').textContent = dias;
+  document.getElementById('fluxo-saidas-dias').textContent = periodo;
 }
 
 // ── Bancos page ────────────────────────────────────────
@@ -180,19 +186,6 @@ function renderVendasEmpresaTable(rows) {
   });
 }
 
-// ── Top Clientes ───────────────────────────────────────
-function renderTopClientesTable(rows) {
-  const tbody = document.getElementById('topclientes-tbody');
-  tbody.innerHTML = '';
-  rows.forEach(r => {
-    const cor = r.saldo > 0 ? '#E38C8C' : '#6FE3A6';
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r.Cliente}</td><td style="font-weight:500;color:var(--accent)">${fmtBRL(r.valor_vendido || 0)}</td>
-      <td style="color:var(--accent)">${fmtBRL(r.valor_recebido || 0)}</td><td style="color:${cor}">${fmtBRL(r.saldo || 0)}</td>`;
-    tbody.appendChild(tr);
-  });
-}
-
 // ── Bancos: per-account detail ─────────────────────────
 function renderBancosDetalhadoTable(rows) {
   const tbody = document.getElementById('bancosdetalhe-tbody');
@@ -216,21 +209,4 @@ function renderFluxoPessoaTable(rows) {
       <td style="font-weight:500;white-space:nowrap">${fmtBRLSigned(r.saldo || 0)}</td>`;
     tbody.appendChild(tr);
   });
-}
-
-// ── Indicadores page ───────────────────────────────────
-function renderIndicadoresCards(state) {
-  const { pmr } = state;
-  const indGrid = document.getElementById('ind-grid');
-  indGrid.innerHTML = '';
-  if (pmr.avgDays !== null) {
-    const d = document.createElement('div');
-    d.className = 'ind-card';
-    d.innerHTML = `<div class="ind-label">Prazo Médio de Recebimento</div><div class="ind-value">${pmr.avgDays} d</div><div class="ind-sub">Da venda até o recebimento</div>`;
-    indGrid.appendChild(d);
-  }
-  const note = document.createElement('div');
-  note.className = 'ind-card';
-  note.innerHTML = `<div class="ind-label">Demais indicadores</div><div style="font-size:13px;color:var(--muted);line-height:1.6;margin-top:4px">Liquidez, Endividamento e Margem Operacional exigem dados de balanço patrimonial, ainda não conectados no Supabase.</div>`;
-  indGrid.appendChild(note);
 }

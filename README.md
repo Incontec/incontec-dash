@@ -4,7 +4,7 @@ An internal financial operations dashboard built for a construction company, giv
 
 Features
 
-The dashboard shows a consolidated balance across all connected banks, plus dedicated views for Fluxo de Caixa, Contas a Receber, Contas a Pagar, Bancos, Relatorios, and Indicadores. Tables support search, filtering, sorting, and pagination, and reports can be exported. An AI assistant panel, INCONTEC AI, is wired to n8n workflows so the finance team can ask questions about the data in plain language and get an answer, with a graceful fallback when the AI service is unavailable. The interface is a dark themed single page app with client side routing between sections.
+The dashboard shows a consolidated balance across all connected banks, plus dedicated views for Fluxo de Caixa, Contas a Receber, Contas a Pagar, Bancos, and Relatorios. Tables support search, filtering, sorting, and pagination, and reports can be exported. An AI assistant panel, INCONTEC AI, is wired to n8n workflows so the finance team can ask questions about the data in plain language and get an answer, with a graceful fallback when the AI service is unavailable. The interface is a dark themed single page app with client side routing between sections.
 
 Stack
 

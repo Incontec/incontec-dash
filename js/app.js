@@ -9,7 +9,6 @@ const NAV = [
   { label:"Contas a Pagar",   iconKey:"arrowUp",   subtitle:"Obrigações pendentes" },
   { label:"Bancos",           iconKey:"landmark",  subtitle:"Saldos por instituição financeira" },
   { label:"Relatórios",       iconKey:"bar",       subtitle:"Exportações e históricos" },
-  { label:"Indicadores",      iconKey:"gauge",     subtitle:"Métricas estratégicas" },
   { label:"INCONTEC AI",      iconKey:"sparkles",  subtitle:"Assistente financeiro inteligente" },
 ];
 // Kept out of the main nav list -- rendered in its own slot above the sync
@@ -44,10 +43,13 @@ function setActive(label) {
   document.getElementById('pageSubtitle').textContent = nav ? nav.subtitle : '';
 
   // The period filter doesn't apply to the AI chat (it isn't fed filtered
-  // data) -- swap it for a status pill there instead of showing a control
-  // that would look active but silently do nothing.
+  // data) or to Fluxo de Caixa (always shows the full real history, same as
+  // Bancos/Contas a Pagar) -- swap it for a status pill on the AI page
+  // instead of showing a control that would look active but silently do
+  // nothing, and just hide it on Fluxo de Caixa.
   const isAI = label === "INCONTEC AI";
-  document.getElementById('periodPicker').classList.toggle('hidden', isAI);
+  const hidePeriodPicker = isAI || label === "Fluxo de Caixa";
+  document.getElementById('periodPicker').classList.toggle('hidden', hidePeriodPicker);
   document.getElementById('aiStatusPill').classList.toggle('hidden', !isAI);
   document.getElementById('pageTitle').classList.toggle('ai-active', isAI);
 }
@@ -110,28 +112,25 @@ let rawData = null;
 
 function buildState(periodKey) {
   const range = getPeriodRange(periodKey);
-  const { bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, bancoStats, contasPagar, fluxoObra, vendasEmpresa, topClientes, bancosDetalhado, fluxoPessoa } = rawData;
+  const { bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, bancoStats, contasPagar, fluxoObra, vendasEmpresa, bancosDetalhado, fluxoPessoa } = rawData;
 
-  const fluxoCaixaFiltered = fluxoCaixa.filter(r => inPeriod(r.Data, range));
   const recebiveisFiltered = recebiveis.filter(r => inPeriod(r["Data Venda"], range));
   const kpis = computeKpisFiltered(resumoVendasRaw, fluxoCaixa, bancoStats.saldoTotal, range);
   const receberSummary = computeReceberSummary(recebiveisFiltered);
-  // resumo_vendas (not vw_inadimplencia) -- PMR needs sales that were
-  // actually paid, with a real Data Quitação, which the delinquency view
-  // never has (every row there is unpaid by definition).
-  const pmr = computePMR(resumoVendasRaw.filter(r => inPeriod(r["Data Venda"], range)));
 
-  // Contas a Pagar is forward-looking (bills not yet due) -- unlike sales/fluxo,
+  // Contas a Pagar is forward-looking (bills not yet due) -- unlike sales,
   // filtering it by a backward-looking period ("últimos 3 meses" etc.) would
   // zero it out, so it's excluded from the period filter, same as bancos.
+  // Fluxo de Caixa is exempt the same way -- that page has no period picker
+  // of its own (see setActive) and always shows the full real history.
   const pagarSummary = computePagarSummary(contasPagar);
 
   return {
     kpis, bancos, bancoStats,
-    fluxoCaixa: fluxoCaixaFiltered, fluxoMensal,
+    fluxoCaixa, fluxoMensal,
     receber: { rows: recebiveisFiltered, summary: receberSummary },
     pagar: { rows: contasPagar, summary: pagarSummary },
-    pmr, vendasObra, fluxoObra, vendasEmpresa, topClientes, bancosDetalhado, fluxoPessoa,
+    vendasObra, fluxoObra, vendasEmpresa, bancosDetalhado, fluxoPessoa,
   };
 }
 
@@ -151,15 +150,11 @@ function renderAll(state) {
   renderBancosCards(state);
   setupBancosTable(state);
   setupBancosDetalhadoTable(state);
-  renderIndicadoresCards(state);
   setupVendasEmpresaTable(state);
-  setupTopClientesTable(state);
 
   initChartDefaults();
   renderDashboardCharts(state);
-  renderFluxoChart(state);
   renderBancosChart(state);
-  renderIndicadoresChart(state);
 
   setupAI(state, 'messages2', 'quickBtns2', 'aiInput2', 'sendBtn2');
   setupExports(state);
@@ -197,17 +192,16 @@ function setupPeriodPicker() {
 }
 
 async function loadAndRender() {
-  const [kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, contasPagar, fluxoObra, vendasEmpresa, topClientes, bancosDetalhado, fluxoPessoa] = await Promise.all([
+  const [kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, contasPagar, fluxoObra, vendasEmpresa, bancosDetalhado, fluxoPessoa] = await Promise.all([
     getKpis(), getBancos(), getFluxoCaixa(), getFluxoMensal(), getRecebiveis(), getVendasObra(), getResumoVendasRaw(), getContasPagar(),
-    getFluxoObra(), getVendasEmpresa(), getTopClientes(), getBancosDetalhado(), getFluxoPessoa(),
+    getFluxoObra(), getVendasEmpresa(), getBancosDetalhado(), getFluxoPessoa(),
   ]);
 
-  rawData = { kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, contasPagar, fluxoObra, vendasEmpresa, topClientes, bancosDetalhado, fluxoPessoa, bancoStats: computeBancoStats(bancos) };
+  rawData = { kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, contasPagar, fluxoObra, vendasEmpresa, bancosDetalhado, fluxoPessoa, bancoStats: computeBancoStats(bancos) };
 
   setupPeriodPicker();
   setupCustomReport();
   setupSettingsPage();
-  setupAlertRecipients();
   renderAll(buildState(currentPeriod));
 
   setLastUpdated(new Date());

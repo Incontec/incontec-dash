@@ -34,9 +34,13 @@ async function getFluxoCaixa() {
   return rows.sort((a, b) => a.Data.localeCompare(b.Data));
 }
 
+// Sorted by month_start (a real calendar date), not MonthNumber (1-12) --
+// the view returns a rolling 12-month window, which crosses a year boundary
+// as soon as more than a year of data exists, and MonthNumber alone can't
+// tell Jan/2026 from Jan/2027 apart.
 async function getFluxoMensal() {
   const rows = await fetchView("vw_fluxo_mensal");
-  return rows.sort((a, b) => a.MonthNumber - b.MonthNumber);
+  return rows.sort((a, b) => a.month_start.localeCompare(b.month_start));
 }
 
 // resumo_vendas filtered to StatusVen "Vendido" (sold, still owing a balance)
@@ -65,11 +69,6 @@ async function getFluxoObra() {
 
 async function getVendasEmpresa() {
   const rows = await fetchView("vw_vendas_empresa");
-  return rows.sort((a, b) => b.valor_vendido - a.valor_vendido);
-}
-
-async function getTopClientes() {
-  const rows = await fetchView("vw_top_clientes");
   return rows.sort((a, b) => b.valor_vendido - a.valor_vendido);
 }
 

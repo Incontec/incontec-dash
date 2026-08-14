@@ -39,14 +39,16 @@ function statusFromRecebivel(row) {
   return row["Cliente Inadimplente"] === "Sim" ? "Vencido" : "A vencer";
 }
 
-// `rows` here is every open receivable (vencido + a vencer) so the table can
-// show both, but these three summary cards are specifically about the overdue
-// subset -- their labels say "vencido"/"inadimplentes"/"atraso" -- so they
-// filter back down to that before totaling.
+// `rows` here is every open receivable (vencido + a vencer). totalEmAberto
+// sums all of them (mirrors Contas a Pagar's totalPagar), while the other
+// three fields are specifically about the overdue subset -- their labels say
+// "vencido"/"inadimplentes"/"atraso" -- so those filter back down to that
+// before totaling.
 function computeReceberSummary(rows) {
   const now = new Date();
+  const totalEmAberto = rows.reduce((s, r) => s + (r["Total a Receber"] || 0), 0);
   const vencidos = rows.filter(r => r["Cliente Inadimplente"] === "Sim");
-  let totalAberto = 0;
+  let totalVencido = 0;
   const clientes = new Set();
   let maiorAtraso = null;
 
@@ -56,7 +58,7 @@ function computeReceberSummary(rows) {
     // balance, including installments not yet due, which overstated this
     // card by ~2.6x (R$97M vs the real R$37M) before this fix.
     const emAtraso = r.Valor_Atraso || 0;
-    totalAberto += emAtraso;
+    totalVencido += emAtraso;
     if (r.Cliente) clientes.add(r.Cliente);
 
     if (r["Data Venda"]) {
@@ -68,7 +70,7 @@ function computeReceberSummary(rows) {
   });
 
   return {
-    totalAberto,
+    totalEmAberto, totalVencido,
     vencidosCount: vencidos.length,
     clientesUnicos: clientes.size,
     maiorAtraso,
@@ -107,63 +109,6 @@ function computePagarSummary(rows) {
 }
 
 const MES_LABEL = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-
-// Only counts sales that were actually paid (a real Data Quitação) --
-// falling back to "today" for still-open receivables would measure how
-// overdue they currently are, not how long payment actually takes, which
-// skews the average toward whatever's oldest and unpaid rather than
-// reflecting real collection speed.
-function computePMR(rows) {
-  const hoje = new Date();
-  // A non-null Data Quitação doesn't guarantee the sale was actually paid --
-  // ~40 rows have it set to a date years in the future (a contractual
-  // payoff/installment-plan end date, not an actual payment event). Counting
-  // those as "already collected" pulled the average from 343 real days up to
-  // 399, so they're excluded here the same way unpaid-open receivables are.
-  const pagas = rows.filter(r => r["Data Venda"] && r["Data Quitação"] && new Date(r["Data Quitação"]) <= hoje);
-
-  // Some Data Quitação values are shared by an implausibly large batch of
-  // sales (e.g. 353 unrelated sales all "quitadas" on the same day) -- a
-  // sign of a bulk/system-migration write rather than real individual
-  // payment dates. Left in, a few such dates dominate the average. A small
-  // cluster (a handful to a few dozen sales settled around the same
-  // month-end due date) is normal and stays; only the extreme outliers,
-  // well beyond that range, are dropped.
-  const porData = new Map();
-  pagas.forEach(r => porData.set(r["Data Quitação"], (porData.get(r["Data Quitação"]) || 0) + 1));
-  const datasEmLote = new Set([...porData].filter(([, n]) => n > 30).map(([data]) => data));
-
-  const withDays = pagas
-    .filter(r => !datasEmLote.has(r["Data Quitação"]))
-    .map(r => {
-      const start = new Date(r["Data Venda"]);
-      const end = new Date(r["Data Quitação"]);
-      const days = Math.round((end - start) / 86400000);
-      return days >= 0 ? { start, days } : null;
-    })
-    .filter(Boolean);
-
-  if (!withDays.length) return { avgDays: null, monthly: [] };
-
-  const avgDays = Math.round(withDays.reduce((s, x) => s + x.days, 0) / withDays.length);
-
-  const byMonth = new Map();
-  withDays.forEach(({ start, days }) => {
-    const key = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}`;
-    if (!byMonth.has(key)) byMonth.set(key, []);
-    byMonth.get(key).push(days);
-  });
-
-  const monthly = [...byMonth.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .slice(-6)
-    .map(([key, arr]) => ({
-      mes: MES_LABEL[Number(key.split("-")[1]) - 1],
-      dias: Math.round(arr.reduce((s, d) => s + d, 0) / arr.length),
-    }));
-
-  return { avgDays, monthly };
-}
 
 function fmtDateBR(isoDate) {
   if (!isoDate) return "—";
