@@ -12,7 +12,7 @@ Vanilla JavaScript, HTML, and CSS on the frontend, no framework. Supabase (Postg
 
 Project structure
 
-js/ holds the application logic and Supabase queries. css/ holds the stylesheet. n8n/ documents the automation workflows. supabase/migrations/ holds the database schema history. index.html is the single entry point.
+js/ holds the application logic and Supabase queries. css/ holds the stylesheet. n8n/ documents the automation workflows. supabase/migrations/ holds the database schema history. mcp-server/ is an MCP server exposing the financial data (contas a pagar, a receber, kpis, cash flow) as tools the AI assistant can call dynamically, replacing the old fixed-context approach. index.html is the single entry point.
 
 Status
 
