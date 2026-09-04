@@ -100,10 +100,10 @@ export function registerTools(server) {
     {
       title: "Consultar contas a pagar",
       description:
-        "Lista contas a pagar EM ABERTO (a tabela so guarda pendentes -- nao existe " +
-        "historico de contas ja pagas ainda). Filtre por obra e/ou por uma janela de " +
-        "vencimento (AAAA-MM-DD) para responder perguntas como 'o que vence esse mes' " +
-        "ou 'quanto a obra X tem a pagar'.",
+        "Lista contas a pagar EM ABERTO (pendentes de pagamento). Para o que ja foi " +
+        "pago, use consultar_contas_pagas em vez desta. Filtre por obra e/ou por uma " +
+        "janela de vencimento (AAAA-MM-DD) para responder perguntas como 'o que vence " +
+        "esse mes' ou 'quanto a obra X tem a pagar'.",
       inputSchema: {
         obra: z.string().optional().describe("nome (ou parte do nome) da obra a filtrar"),
         vencimento_de: z.string().optional().describe("data minima de vencimento, AAAA-MM-DD"),
@@ -127,14 +127,15 @@ export function registerTools(server) {
   );
 
   server.registerTool(
-    "consultar_contas_a_receber",
+    "consultar_recebimentos_por_venda",
     {
-      title: "Consultar contas a receber / recebidas",
+      title: "Consultar recebimentos por venda/cliente",
       description:
-        "Consulta vendas e seus recebimentos (contas a receber e ja recebidas). Cada " +
-        "linha tem valor vendido, valor ja recebido, saldo a receber e se o cliente " +
-        "esta inadimplente. Filtre por cliente, obra e/ou periodo da venda para " +
-        "perguntas especificas em vez de so o agregado geral.",
+        "Consulta vendas e seus recebimentos a partir do resumo de vendas (visao POR " +
+        "VENDA/CLIENTE, com valor vendido, valor ja recebido, saldo a receber e status " +
+        "de inadimplencia). Para os titulos financeiros brutos do ERP (visao por " +
+        "titulo/duplicata), use consultar_titulos_a_receber. Filtre por cliente, obra " +
+        "e/ou periodo da venda para perguntas especificas.",
       inputSchema: {
         cliente: z.string().optional().describe("nome (ou parte do nome) do cliente"),
         obra: z.string().optional().describe("nome (ou parte do nome) da obra"),
@@ -158,6 +159,68 @@ export function registerTools(server) {
         filters,
         order: '"Data Venda".desc',
         limit: limite || 200,
+      });
+      return asResult(rows);
+    }
+  );
+
+  server.registerTool(
+    "consultar_titulos_a_receber",
+    {
+      title: "Consultar titulos a receber (ERP)",
+      description:
+        "Lista titulos a receber EM ABERTO diretamente do ERP (tabela contas_a_receber, " +
+        "espelhando contas_a_pagar). Diferente de consultar_recebimentos_por_venda (que " +
+        "agrega por venda/cliente a partir do resumo de vendas), aqui cada linha e um " +
+        "titulo/duplicata bruto. Filtre por obra e/ou janela de vencimento (AAAA-MM-DD).",
+      inputSchema: {
+        obra: z.string().optional().describe("nome (ou parte do nome) da obra a filtrar"),
+        vencimento_de: z.string().optional().describe("data minima de vencimento, AAAA-MM-DD"),
+        vencimento_ate: z.string().optional().describe("data maxima de vencimento, AAAA-MM-DD"),
+        tipo_conta: z.string().optional().describe("filtra pelo tipo/categoria da conta"),
+      },
+    },
+    async ({ obra, vencimento_de, vencimento_ate, tipo_conta }) => {
+      const filters = [["organizacao_id", "eq", ORGANIZACAO_ID]];
+      if (obra) filters.push(["obra", "ilike", `*${obra}*`]);
+      if (vencimento_de) filters.push(["vencimento", "gte", vencimento_de]);
+      if (vencimento_ate) filters.push(["vencimento", "lte", vencimento_ate]);
+      if (tipo_conta) filters.push(["tipo_conta", "eq", tipo_conta]);
+      const rows = await fetchFromSupabase("contas_a_receber", {
+        select: "identificador,nominal,obra,descricao_obra,vencimento,valor_receber,tipo_conta,tipo,data_geracao",
+        filters,
+        order: "vencimento.asc",
+      });
+      return asResult(rows);
+    }
+  );
+
+  server.registerTool(
+    "consultar_contas_pagas",
+    {
+      title: "Consultar contas ja pagas",
+      description:
+        "Lista o HISTORICO de titulos ja pagos (tabela contas_pagas), com valor " +
+        "efetivamente pago e data do pagamento -- diferente de consultar_contas_a_pagar, " +
+        "que so mostra o que ainda esta pendente. Use para perguntas como 'quanto ja " +
+        "pagamos esse mes' ou 'o que foi pago pra obra X'.",
+      inputSchema: {
+        obra: z.string().optional().describe("nome (ou parte do nome) da obra a filtrar"),
+        pagamento_de: z.string().optional().describe("data minima do pagamento, AAAA-MM-DD"),
+        pagamento_ate: z.string().optional().describe("data maxima do pagamento, AAAA-MM-DD"),
+        tipo_conta: z.string().optional().describe("filtra pelo tipo/categoria da conta"),
+      },
+    },
+    async ({ obra, pagamento_de, pagamento_ate, tipo_conta }) => {
+      const filters = [["organizacao_id", "eq", ORGANIZACAO_ID]];
+      if (obra) filters.push(["obra", "ilike", `*${obra}*`]);
+      if (pagamento_de) filters.push(["data_pagamento", "gte", pagamento_de]);
+      if (pagamento_ate) filters.push(["data_pagamento", "lte", pagamento_ate]);
+      if (tipo_conta) filters.push(["tipo_conta", "eq", tipo_conta]);
+      const rows = await fetchFromSupabase("contas_pagas", {
+        select: "identificador,nominal,obra,descricao_obra,vencimento,valor_pago,data_pagamento,tipo_conta,tipo",
+        filters,
+        order: "data_pagamento.desc",
       });
       return asResult(rows);
     }

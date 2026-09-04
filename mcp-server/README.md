@@ -26,18 +26,33 @@ filtros, em vez de receber um bloco de texto fixo pré-montado.
 | `consultar_fluxo_mensal` | `vw_fluxo_mensal` | — |
 | `consultar_fluxo_por_obra` | `vw_fluxo_obra` | `obra` |
 | `consultar_inadimplencia` | `vw_inadimplencia` | `limite` |
-| `consultar_contas_a_pagar` | `contas_pagar` | `obra`, `vencimento_de`, `vencimento_ate`, `tipo_conta` |
-| `consultar_contas_a_receber` | `resumo_vendas` | `cliente`, `obra`, `apenas_inadimplentes`, `data_venda_de`, `data_venda_ate` |
+| `consultar_contas_a_pagar` | `contas_pagar` (so pendentes) | `obra`, `vencimento_de`, `vencimento_ate`, `tipo_conta` |
+| `consultar_contas_pagas` | `contas_pagas` (historico) | `obra`, `pagamento_de`, `pagamento_ate`, `tipo_conta` |
+| `consultar_titulos_a_receber` | `contas_a_receber` (titulos ERP, so pendentes) | `obra`, `vencimento_de`, `vencimento_ate`, `tipo_conta` |
+| `consultar_recebimentos_por_venda` | `resumo_vendas` (por venda/cliente) | `cliente`, `obra`, `apenas_inadimplentes`, `data_venda_de`, `data_venda_ate` |
 
-**Limitação atual:** `contas_pagar` só guarda contas em aberto — não existe
-histórico de contas já pagas (o ERP UAU já filtra só pendentes na sincronização,
-ver [`../n8n/README-sync.md`](../n8n/README-sync.md)). Se o time quiser
-perguntar "o que já foi pago", a sincronização do n8n precisa trazer esse
-histórico do ERP antes que uma ferramenta `consultar_contas_pagas` faça sentido.
+`contas_pagas` e `contas_a_receber` vêm dos dois branches novos do workflow
+"Projeto Final - Visconde" (nodes **BUSCAR Contas Pagas** → **SALVAR SUPABASE5**
+e **BUSCAR Contas a Receber** → **SALVAR SUPABASE3**) — schema criado em
+[`../supabase/migrations/010_contas_a_receber_e_pagas.sql`](../supabase/migrations/010_contas_a_receber_e_pagas.sql).
+**Antes de rodar essa migration**, confira os nomes de coluna nela contra a
+resposta real dos nodes BUSCAR no n8n (o comentário no topo do arquivo explica
+por quê) — mesmo cuidado que já foi necessário para `contas_pagar` (ver
+[`../n8n/README-sync.md`](../n8n/README-sync.md), seção "Nomes de campo do ERP
+não batem com as colunas do Supabase"). Cada tabela tem sua função
+`limpar_contas_a_receber()` / `limpar_contas_pagas()` para o node
+**AGENDAMENTO** truncar antes do BUSCAR repopular, seguindo o mesmo padrão de
+`limpar_contas_pagar()` (migration 009).
+
+Com isso, `contas_pagar` deixa de ser a única fonte de "pagamentos" — ela
+segue sendo só o que está em aberto, e `contas_pagas` cobre o histórico do que
+já foi pago, que era a lacuna original.
 
 **Multi-tenant:** o servidor roda com a `service_role key`, que ignora RLS.
-`consultar_contas_a_pagar` e `consultar_contas_a_receber` filtram explicitamente
-por `ORGANIZACAO_ID` porque essas tabelas têm essa coluna. As views (`vw_*`)
+As quatro ferramentas sobre tabelas (`consultar_contas_a_pagar`,
+`consultar_contas_pagas`, `consultar_titulos_a_receber`,
+`consultar_recebimentos_por_venda`) filtram explicitamente por
+`ORGANIZACAO_ID` porque essas tabelas têm essa coluna. As views (`vw_*`)
 não são filtradas no código — hoje existe só uma organização (Incontec), então
 não há vazamento na prática, mas se um segundo cliente for adicionado, seria
 necessário confirmar se cada view já filtra por `organizacao_id` internamente
