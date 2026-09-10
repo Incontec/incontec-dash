@@ -43,15 +43,13 @@ async function getFluxoMensal() {
   return rows.sort((a, b) => a.month_start.localeCompare(b.month_start));
 }
 
-// resumo_vendas filtered to StatusVen "Vendido" (sold, still owing a balance)
-// -- vw_inadimplencia only ever holds delinquent titles, so it couldn't show
-// receivables that are still within their term (not yet overdue).
+// Per-installment receivables straight from the UAU "Contas a Receber"
+// report (contas_a_receber table): one row per parcela, each with its own
+// vencimento/prorrogação and valor. Replaced the resumo_vendas-derived
+// version, which was sales-level and leaned on the ERP's "Cliente
+// Inadimplente" flag rather than a real due date.
 async function getRecebiveis() {
-  return fetchView(
-    "resumo_vendas",
-    'Cliente,Obra,"Data Venda","Valor Venda","Valor Recebido","Total a Receber","Cliente Inadimplente",Valor_Atraso,StatusVen',
-    q => q.eq("StatusVen", "Vendido")
-  );
+  return fetchView("contas_a_receber");
 }
 
 async function getVendasObra() {
@@ -102,4 +100,11 @@ async function getFluxoPessoa() {
 async function getContasPagar() {
   const rows = await fetchView("contas_pagar", "nominal,obra,vencimento,valor_pagar,tipo_conta");
   return rows.sort((a, b) => (a.vencimento || '').localeCompare(b.vencimento || ''));
+}
+
+// contas_pagas is the opposite side: bills already settled (payment history
+// from the UAU "Contas Pagas" report), most-recently-paid first.
+async function getContasPagas() {
+  const rows = await fetchView("contas_pagas");
+  return rows.sort((a, b) => (b.data_pagamento || '').localeCompare(a.data_pagamento || ''));
 }

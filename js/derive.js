@@ -35,36 +35,38 @@ function participacaoPct(saldo, bancoStats) {
   return Math.round((saldo / bancoStats.totalPositivo) * 100);
 }
 
-function statusFromRecebivel(row) {
-  return row["Cliente Inadimplente"] === "Sim" ? "Vencido" : "A vencer";
+// Effective due date of a parcela: a postponed one (data_prorrogacao) is due
+// on the new date, not the original data_vencimento.
+function vencimentoRecebivel(row) {
+  return row.data_prorrogacao || row.data_vencimento || null;
 }
 
-// `rows` here is every open receivable (vencido + a vencer). totalEmAberto
-// sums all of them (mirrors Contas a Pagar's totalPagar), while the other
-// three fields are specifically about the overdue subset -- their labels say
-// "vencido"/"inadimplentes"/"atraso" -- so those filter back down to that
-// before totaling.
+function statusFromRecebivel(row) {
+  const venc = vencimentoRecebivel(row);
+  return venc && new Date(venc) < new Date() ? "Vencido" : "A vencer";
+}
+
+// `rows` here is every open parcela (vencido + a vencer). totalEmAberto sums
+// all of them (mirrors Contas a Pagar's totalPagar); the other three fields
+// are about the overdue subset only -- their labels say
+// "vencido"/"inadimplentes"/"atraso".
 function computeReceberSummary(rows) {
   const now = new Date();
-  const totalEmAberto = rows.reduce((s, r) => s + (r["Total a Receber"] || 0), 0);
-  const vencidos = rows.filter(r => r["Cliente Inadimplente"] === "Sim");
+  const totalEmAberto = rows.reduce((s, r) => s + (r.valor_parcela || 0), 0);
+  const vencidos = rows.filter(r => statusFromRecebivel(r) === "Vencido");
   let totalVencido = 0;
   const clientes = new Set();
   let maiorAtraso = null;
 
   vencidos.forEach(r => {
-    // Valor_Atraso (not Total a Receber) -- the ERP's own figure for the
-    // portion actually past due. Total a Receber is the full remaining
-    // balance, including installments not yet due, which overstated this
-    // card by ~2.6x (R$97M vs the real R$37M) before this fix.
-    const emAtraso = r.Valor_Atraso || 0;
-    totalVencido += emAtraso;
-    if (r.Cliente) clientes.add(r.Cliente);
+    totalVencido += r.valor_parcela || 0;
+    if (r.codigo_cliente != null) clientes.add(r.codigo_cliente);
 
-    if (r["Data Venda"]) {
-      const dias = Math.round((now - new Date(r["Data Venda"])) / 86400000);
+    const venc = vencimentoRecebivel(r);
+    if (venc) {
+      const dias = Math.round((now - new Date(venc)) / 86400000);
       if (!maiorAtraso || dias > maiorAtraso.dias) {
-        maiorAtraso = { cliente: r.Cliente, dias, valor: emAtraso };
+        maiorAtraso = { cliente: r.cliente, dias, valor: r.valor_parcela || 0 };
       }
     }
   });

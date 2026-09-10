@@ -43,12 +43,14 @@ function setActive(label) {
   document.getElementById('pageSubtitle').textContent = nav ? nav.subtitle : '';
 
   // The period filter doesn't apply to the AI chat (it isn't fed filtered
-  // data) or to Fluxo de Caixa (always shows the full real history, same as
-  // Bancos/Contas a Pagar) -- swap it for a status pill on the AI page
-  // instead of showing a control that would look active but silently do
-  // nothing, and just hide it on Fluxo de Caixa.
+  // data), to Fluxo de Caixa (always shows the full real history), or to
+  // Contas a Pagar / Contas a Receber (open-obligation lists, exempt from
+  // the period filter). Swap it for a status pill on the AI page and hide
+  // it on the others, instead of leaving a control that looks active but
+  // silently does nothing.
   const isAI = label === "INCONTEC AI";
-  const hidePeriodPicker = isAI || label === "Fluxo de Caixa";
+  const hidePeriodPicker = isAI || label === "Fluxo de Caixa"
+    || label === "Contas a Pagar" || label === "Contas a Receber";
   document.getElementById('periodPicker').classList.toggle('hidden', hidePeriodPicker);
   document.getElementById('aiStatusPill').classList.toggle('hidden', !isAI);
   document.getElementById('pageTitle').classList.toggle('ai-active', isAI);
@@ -112,24 +114,24 @@ let rawData = null;
 
 function buildState(periodKey) {
   const range = getPeriodRange(periodKey);
-  const { bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, bancoStats, contasPagar, fluxoObra, vendasEmpresa, bancosDetalhado, fluxoPessoa } = rawData;
+  const { bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, bancoStats, contasPagar, contasPagas, fluxoObra, vendasEmpresa, bancosDetalhado, fluxoPessoa } = rawData;
 
-  const recebiveisFiltered = recebiveis.filter(r => inPeriod(r["Data Venda"], range));
   const kpis = computeKpisFiltered(resumoVendasRaw, fluxoCaixa, bancoStats.saldoTotal, range);
-  const receberSummary = computeReceberSummary(recebiveisFiltered);
+  const receberSummary = computeReceberSummary(recebiveis);
 
-  // Contas a Pagar is forward-looking (bills not yet due) -- unlike sales,
-  // filtering it by a backward-looking period ("últimos 3 meses" etc.) would
-  // zero it out, so it's excluded from the period filter, same as bancos.
-  // Fluxo de Caixa is exempt the same way -- that page has no period picker
-  // of its own (see setActive) and always shows the full real history.
+  // Contas a Pagar and Contas a Receber are both open-obligation lists
+  // (overdue + not-yet-due), not activity over time -- a backward-looking
+  // period filter ("últimos 3 meses" etc.) would hide the older overdue
+  // items, which is exactly what a collections view must not do. Both are
+  // exempt, same as bancos, and their pages hide the period picker (see
+  // setActive). Fluxo de Caixa is exempt the same way.
   const pagarSummary = computePagarSummary(contasPagar);
 
   return {
     kpis, bancos, bancoStats,
     fluxoCaixa, fluxoMensal,
-    receber: { rows: recebiveisFiltered, summary: receberSummary },
-    pagar: { rows: contasPagar, summary: pagarSummary },
+    receber: { rows: recebiveis, summary: receberSummary },
+    pagar: { rows: contasPagar, pagas: contasPagas, summary: pagarSummary },
     vendasObra, fluxoObra, vendasEmpresa, bancosDetalhado, fluxoPessoa,
   };
 }
@@ -192,12 +194,12 @@ function setupPeriodPicker() {
 }
 
 async function loadAndRender() {
-  const [kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, contasPagar, fluxoObra, vendasEmpresa, bancosDetalhado, fluxoPessoa] = await Promise.all([
-    getKpis(), getBancos(), getFluxoCaixa(), getFluxoMensal(), getRecebiveis(), getVendasObra(), getResumoVendasRaw(), getContasPagar(),
+  const [kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, contasPagar, contasPagas, fluxoObra, vendasEmpresa, bancosDetalhado, fluxoPessoa] = await Promise.all([
+    getKpis(), getBancos(), getFluxoCaixa(), getFluxoMensal(), getRecebiveis(), getVendasObra(), getResumoVendasRaw(), getContasPagar(), getContasPagas(),
     getFluxoObra(), getVendasEmpresa(), getBancosDetalhado(), getFluxoPessoa(),
   ]);
 
-  rawData = { kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, contasPagar, fluxoObra, vendasEmpresa, bancosDetalhado, fluxoPessoa, bancoStats: computeBancoStats(bancos) };
+  rawData = { kpis, bancos, fluxoCaixa, fluxoMensal, recebiveis, vendasObra, resumoVendasRaw, contasPagar, contasPagas, fluxoObra, vendasEmpresa, bancosDetalhado, fluxoPessoa, bancoStats: computeBancoStats(bancos) };
 
   setupPeriodPicker();
   setupCustomReport();

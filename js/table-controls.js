@@ -49,14 +49,18 @@ function setupReceberTable(state) {
   const allRows = state.receber.rows;
   const pageEl = document.getElementById('page-Contas a Receber');
   const pageSize = 15;
-  let query = '', agingKey = 'todos', sortKey = 'Total a Receber', sortDir = 'desc', page = 1;
+  let query = '', agingKey = 'todos', sortKey = 'valor_parcela', sortDir = 'desc', page = 1;
 
+  // Buckets by how overdue the parcela is (days past its effective due date),
+  // for collections prioritisation -- not by age of the sale, which this
+  // per-installment source no longer carries.
   function agingBucket(row) {
-    if (!row["Data Venda"]) return 'antigo';
-    const dias = Math.round((new Date() - new Date(row["Data Venda"])) / 86400000);
-    if (dias < 90) return 'recente';
-    if (dias <= 365) return 'medio';
-    return 'antigo';
+    const venc = row.data_prorrogacao || row.data_vencimento;
+    if (!venc) return 'avencer';
+    const dias = Math.round((new Date() - new Date(venc)) / 86400000);
+    if (dias < 0) return 'avencer';
+    if (dias < 90) return 'venc90';
+    return 'venc90plus';
   }
 
   function filtered() {
@@ -64,7 +68,7 @@ function setupReceberTable(state) {
       if (agingKey !== 'todos' && agingBucket(r) !== agingKey) return false;
       if (!query) return true;
       const q = query.toLowerCase();
-      return (r.Cliente || '').toLowerCase().includes(q) || (r.Obra || '').toLowerCase().includes(q);
+      return (r.cliente || '').toLowerCase().includes(q) || (r.obra || '').toLowerCase().includes(q);
     });
   }
 
@@ -81,9 +85,9 @@ function setupReceberTable(state) {
 
   const chips = [
     { key: 'todos', label: 'Todos' },
-    { key: 'recente', label: '< 90 dias' },
-    { key: 'medio', label: '90–365 dias' },
-    { key: 'antigo', label: '> 365 dias' },
+    { key: 'avencer', label: 'A vencer' },
+    { key: 'venc90', label: 'Vencido < 90d' },
+    { key: 'venc90plus', label: 'Vencido ≥ 90d' },
   ];
   const chipsEl = document.getElementById('receber-chips');
   chipsEl.innerHTML = '';
@@ -112,15 +116,21 @@ function setupReceberTable(state) {
 }
 
 // ── Contas a Pagar: search + status filter + sort + pagination ───────
+// The "Pagas" chip swaps the whole table over to contas_pagas (payment
+// history) -- a different dataset, so the header labels for columns 3 and 5
+// change (Pago em / Forma) and column sorting is off there (the list comes
+// pre-sorted most-recent-first).
 function setupPagarTable(state) {
   const allRows = state.pagar.rows;
+  const pagasRows = state.pagar.pagas || [];
   const pageEl = document.getElementById('page-Contas a Pagar');
+  const headCells = pageEl.querySelectorAll('thead th');
   const pageSize = 15;
   let query = '', statusKey = 'todos', sortKey = 'vencimento', sortDir = 'asc', page = 1;
 
-  function filtered() {
+  function filteredAbertas() {
     return allRows.filter(r => {
-      if (statusKey !== 'todos') {
+      if (statusKey === 'vencido' || statusKey === 'a_vencer') {
         const want = statusKey === 'vencido' ? 'Vencido' : 'A Vencer';
         if (statusFromPagar(r) !== want) return false;
       }
@@ -129,14 +139,28 @@ function setupPagarTable(state) {
       return (r.nominal || '').toLowerCase().includes(q) || (r.obra || '').toLowerCase().includes(q);
     });
   }
+  function filteredPagas() {
+    if (!query) return pagasRows;
+    const q = query.toLowerCase();
+    return pagasRows.filter(r => (r.fornecedor || '').toLowerCase().includes(q) || (r.obra || '').toLowerCase().includes(q));
+  }
+
+  const indGrid = pageEl.querySelector('.ind-grid');
 
   function render() {
-    const rows = sortRows(filtered(), sortKey, sortDir, textAccessor);
+    const pagas = statusKey === 'pagas';
+    headCells[2].textContent = pagas ? 'Pago em' : 'Vencimento';
+    headCells[4].textContent = pagas ? 'Forma' : 'Status';
+    // The summary cards below the table are all about open/overdue payables,
+    // so they don't apply while the paid-history view is showing.
+    if (indGrid) indGrid.style.display = pagas ? 'none' : '';
+
+    const rows = pagas ? filteredPagas() : sortRows(filteredAbertas(), sortKey, sortDir, textAccessor);
     const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
     page = Math.min(page, totalPages);
-    renderPagarTable(paginate(rows, page, pageSize));
+    (pagas ? renderContasPagasTable : renderPagarTable)(paginate(rows, page, pageSize));
     renderPagination(document.getElementById('pagar-pagination'), { page, totalPages, onPageChange: p => { page = p; render(); } });
-    updateSortHeaders(pageEl, sortKey, sortDir);
+    updateSortHeaders(pageEl, pagas ? null : sortKey, sortDir);
   }
 
   document.getElementById('pagar-search').oninput = e => { query = e.target.value; page = 1; render(); };
@@ -145,6 +169,7 @@ function setupPagarTable(state) {
     { key: 'todos', label: 'Todos' },
     { key: 'vencido', label: 'Vencidos' },
     { key: 'a_vencer', label: 'A Vencer' },
+    { key: 'pagas', label: 'Pagas' },
   ];
   const chipsEl = document.getElementById('pagar-chips');
   chipsEl.innerHTML = '';

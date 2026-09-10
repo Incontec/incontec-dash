@@ -48,7 +48,7 @@ function renderReceberBanner(state) {
   document.getElementById('banner-receber').innerHTML = `
     <span style="color:var(--accent);flex-shrink:0;margin-top:2px;width:18px;height:18px">${I.arrowDown}</span>
     <span><span class="hi">Contas a Receber:</span> Total em aberto de <span class="val">${fmtBRLRed(summary.totalEmAberto)}</span>.
-    <span class="warn">${summary.vencidosCount} título${summary.vencidosCount===1?'':'s'} vencido${summary.vencidosCount===1?'':'s'}</span> aguardando cobrança.</span>`;
+    <span class="warn">${summary.vencidosCount} parcela${summary.vencidosCount===1?'':'s'} vencida${summary.vencidosCount===1?'':'s'}</span> aguardando cobrança.</span>`;
 }
 
 function renderReceberTable(rows) {
@@ -57,8 +57,9 @@ function renderReceberTable(rows) {
   recTbody.innerHTML = '';
   rows.forEach(r => {
     const status = statusFromRecebivel(r);
+    const venc = vencimentoRecebivel(r);
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r.Cliente}</td><td style="color:var(--muted)">${r.Obra}</td><td style="color:var(--muted)">${r["Data Venda"] || '—'}</td><td style="font-weight:500;color:${statusColor(status)}">${fmtBRL(r["Total a Receber"] || 0)}</td>
+    tr.innerHTML = `<td>${r.cliente || '—'}</td><td style="color:var(--muted)">${r.obra || '—'}</td><td style="color:var(--muted)">${venc ? venc.slice(0,10) : '—'}</td><td style="font-weight:500;color:${statusColor(status)}">${fmtBRL(r.valor_parcela || 0)}</td>
       <td style="white-space:nowrap"><span style="font-size:11px;padding:2px 8px;border-radius:4px;white-space:nowrap;background:${statusColor(status)}22;color:${statusColor(status)}">${status}</span></td>`;
     recTbody.appendChild(tr);
   });
@@ -67,7 +68,7 @@ function renderReceberTable(rows) {
 function renderReceberSummaryCards(state) {
   const s = state.receber.summary;
   document.getElementById('rec-total-valor').innerHTML = fmtBRLRed(s.totalVencido);
-  document.getElementById('rec-total-sub').textContent = `${s.vencidosCount} título${s.vencidosCount===1?'':'s'} vencido${s.vencidosCount===1?'':'s'}`;
+  document.getElementById('rec-total-sub').textContent = `${s.vencidosCount} parcela${s.vencidosCount===1?'':'s'} vencida${s.vencidosCount===1?'':'s'}`;
   document.getElementById('rec-clientes-valor').textContent = s.clientesUnicos;
   document.getElementById('rec-clientes-sub').textContent = `cliente${s.clientesUnicos===1?'':'s'} inadimplente${s.clientesUnicos===1?'':'s'}`;
   document.getElementById('rec-atraso-valor').textContent = s.maiorAtraso ? `${s.maiorAtraso.dias} d` : '—';
@@ -92,6 +93,20 @@ function renderPagarTable(rows) {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${r.nominal || '—'}</td><td style="color:var(--muted)">${r.obra || '—'}</td><td style="color:var(--muted)">${r.vencimento ? r.vencimento.slice(0,10) : '—'}</td><td style="font-weight:500;color:${statusColor(status)}">${fmtBRL(r.valor_pagar || 0)}</td>
       <td style="white-space:nowrap"><span style="font-size:11px;padding:2px 8px;border-radius:4px;white-space:nowrap;background:${statusColor(status)}22;color:${statusColor(status)}">${status}</span></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// Payment history (contas_pagas) -- shown under the "Pagas" chip on the
+// Contas a Pagar page. Different columns from open payables: paid-on date
+// instead of due date, payment method instead of overdue status.
+function renderContasPagasTable(rows) {
+  const tbody = document.getElementById('pagar-tbody');
+  tbody.innerHTML = '';
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.fornecedor || '—'}</td><td style="color:var(--muted)">${r.obra || '—'}</td><td style="color:var(--muted)">${r.data_pagamento ? r.data_pagamento.slice(0,10) : '—'}</td><td style="font-weight:500;color:var(--accent)">${fmtBRL(r.valor || 0)}</td>
+      <td style="color:var(--muted);white-space:nowrap">${r.tipo_pagamento || '—'}</td>`;
     tbody.appendChild(tr);
   });
 }
