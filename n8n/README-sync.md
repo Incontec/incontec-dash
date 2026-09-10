@@ -2,7 +2,69 @@
 
 Workflow no n8n (`https://n8n.incontec.com.br/workflow/NLmnOLCbVcjzVURD-T1jZ`)
 que puxa dados do ERP UAU (SeniorCloud) e grava em `fluxo_caixa`,
-`saldo_contas`, `resumo_vendas` e `contas_pagar` no Supabase.
+`saldo_contas`, `resumo_vendas`, `contas_pagar`, `contas_a_receber` e
+`contas_pagas` no Supabase.
+
+## Trigger `AGENDAMENTO` — branch Contas a Receber + Contas Pagas
+
+Trigger separado dos demais (`AGENDAMENTO4` faz saldos/fluxo/resumo/contas a
+pagar, `AGENDAMENTO6` faz os TRUNCATE). Duas ramificações:
+
+- `LOGIN UAU6 → BUSCAR Contas a Receber → Loop Over Items2 (batch 25) →
+  SALVAR SUPABASE3 → contas_a_receber` — ~8,9 mil linhas (uma por parcela),
+  report UAU `{"Id": 25, "Personalizado": 1}`.
+- `LOGIN UAU7 → BUSCAR Contas Pagas → Loop Over Items3 (batch 25) →
+  SALVAR SUPABASE5 → contas_pagas` — ~3,2 mil linhas (uma por pagamento).
+
+### Upsert de verdade — `?on_conflict=` na URL
+
+Ambas as tabelas têm uma UNIQUE separada do PK (`id`):
+
+| Tabela | Constraint | Colunas |
+|---|---|---|
+| `contas_a_receber` | `contas_a_receber_linha_key` | `empresa, obra, numer_venda, codigo_cliente, num_parc` |
+| `contas_pagas` | `contas_pagas_linha_key` | `num_processo, empresa, obra, data_vencimento, valor` |
+
+O `Prefer: resolution=merge-duplicates` sozinho **não basta**: o PostgREST
+mira o PK (`id`), nunca casa, e a linha então estoura a UNIQUE → `409`
+duplicate key em toda reexecução. A URL de cada node precisa carregar
+`?on_conflict=<essas colunas>`:
+
+```
+.../rest/v1/contas_a_receber?on_conflict=empresa,obra,numer_venda,codigo_cliente,num_parc
+.../rest/v1/contas_pagas?on_conflict=num_processo,empresa,obra,data_vencimento,valor
+```
+
+Com isso vira UPSERT real — sem precisar de TRUNCATE antes (essas duas
+tabelas **não** entram no `AGENDAMENTO6`), sem 409, e linhas já existentes
+são atualizadas em vez de puladas.
+
+**Limitação conhecida:** como não há TRUNCATE, uma parcela que for
+_cancelada_ no ERP (some do report) continua no `contas_a_receber` como se
+estivesse em aberto. `contas_pagas` é histórico (append-only), então lá não
+importa. Se isso virar problema, a opção é seguir o padrão das outras
+tabelas: criar `rpc/limpar_contas_a_receber` + um node DELETE no
+`AGENDAMENTO6`.
+
+### Bugs corrigidos nesses 2 nodes (2026-09-10)
+
+- **SALVAR SUPABASE3** apontava para `contas_pagar` (tabela errada) → `400
+  PGRST204 "Could not find the 'cliente' column"`, zero linhas gravadas.
+  Corrigido para `contas_a_receber`.
+- Os dois nodes não tinham `?on_conflict=` → `409` em toda linha na segunda
+  execução (ver acima). Corrigido.
+
+### Colunas gravadas (Body JSON dos nodes)
+
+- `contas_a_receber`: `empresa, obra, numer_venda, codigo_cliente, cliente,
+  tipo_parc, num_parc, num_parc_geral, data_vencimento, data_prorrogacao,
+  valor_parcela` (+ `organizacao_id`).
+- `contas_pagas`: `num_processo, empresa, obra, banco, fornecedor,
+  data_vencimento, data_pagamento, valor, status_pag, tipo_pagamento,
+  desc_pagamento` (+ `organizacao_id`).
+
+Ambas com RLS + policy select-own-org, mesmo padrão de
+[`002_contas_pagar_rls.sql`](../supabase/migrations/002_contas_pagar_rls.sql).
 
 ## organizacao_id obrigatório
 
