@@ -53,6 +53,11 @@ tabelas: criar `rpc/limpar_contas_a_receber` + um node DELETE no
   Corrigido para `contas_a_receber`.
 - Os dois nodes não tinham `?on_conflict=` → `409` em toda linha na segunda
   execução (ver acima). Corrigido.
+- Os dois nodes não mandavam `organizacao_id` no body → as linhas entravam
+  com org nula e a RLS do dashboard (sessão autenticada) não via nenhuma.
+  Adicionado `"organizacao_id": "00000000-0000-0000-0000-000000000001"` no
+  Body JSON, igual aos outros 4 SALVAR. Backfill das linhas antigas +
+  policy em [`supabase/migrations/010_contas_a_receber_pagas_rls.sql`](../supabase/migrations/010_contas_a_receber_pagas_rls.sql).
 
 ### Colunas gravadas (Body JSON dos nodes)
 
