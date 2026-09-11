@@ -53,6 +53,21 @@ Preciso que você, com acesso real a esta VPS/n8n/Supabase, faça o seguinte:
    ligue-os para chamar `rpc/limpar_contas_a_receber` e
    `rpc/limpar_contas_pagas` antes do BUSCAR, do mesmo jeito que o branch de
    `contas_pagar` já faz (ver migration 009).
+6. **Depois que `contas_pagas` estiver populada de verdade**, valide e rode
+   `supabase/migrations/011_fluxo_via_pilares.sql` — ela redefine
+   `vw_fluxo_obra` e `vw_fluxo_pessoa` pra calcular "pagar" a partir de
+   `contas_pagas` em vez de duplicar com o `Pagar` de `fluxo_caixa` (decisão
+   do time: `fluxo_caixa` continua sendo a única fonte do lado "receber",
+   não criamos uma tabela "contas recebidas" separada). O checklist de
+   validação está no topo do próprio arquivo — inclui confirmar se os nomes
+   de obra batem entre as tabelas e rodar `pg_get_viewdef` nas views que
+   ainda não foram adaptadas (`vw_fluxo_mensal`, `vw_kpis`,
+   `vw_inadimplencia`, `vw_vendas_obra`, `vw_vendas_empresa`,
+   `vw_top_clientes`) — elas dependem de `resumo_vendas`, que só pode ser
+   reconstruída em cima de `contas_a_receber` depois de confirmar se essa
+   tabela tem algum campo que ligue o título a um cliente/venda. **Não
+   aplique esta migration sem passar pelo checklist primeiro** — essas views
+   alimentam boa parte do dashboard em produção.
 
 Ao final, teste o webhook de produção com uma pergunta que antes não dava
 pra responder, tipo "quanto já pagamos pra Obra X esse mês" ou "quais
