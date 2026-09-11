@@ -49,18 +49,22 @@
 --      where table_name = 'contas_a_receber';
 --    e me diga o resultado antes de eu desenhar essa parte.
 
+-- FULL JOIN (nao LEFT JOIN) -- uma obra que so tem pagamento e nunca teve
+-- "Receber" lancado em fluxo_caixa (ex: obra ainda em fase de gastos, sem
+-- venda registrada) precisa aparecer com receber=0, nao desaparecer da
+-- view inteira por nao ter linha do lado esquerdo.
 create or replace view public.vw_fluxo_obra with (security_invoker = true) as
-select f.obra,
-       f.receber,
+select coalesce(f.obra, p.obra) as obra,
+       coalesce(f.receber, 0) as receber,
        coalesce(p.pago, 0) as pagar,
-       f.receber - coalesce(p.pago, 0) as saldo
+       coalesce(f.receber, 0) - coalesce(p.pago, 0) as saldo
 from (
   select "Obra" as obra, sum(coalesce("Receber", 0)) as receber
   from public.fluxo_caixa
   where "Obra" is not null
   group by "Obra"
 ) f
-left join (
+full join (
   select obra, sum(valor_pago) as pago
   from public.contas_pagas
   where obra is not null
@@ -68,17 +72,17 @@ left join (
 ) p on p.obra = f.obra;
 
 create or replace view public.vw_fluxo_pessoa with (security_invoker = true) as
-select f.pessoa,
-       f.receber,
+select coalesce(f.pessoa, p.nominal) as pessoa,
+       coalesce(f.receber, 0) as receber,
        coalesce(p.pago, 0) as pagar,
-       f.receber - coalesce(p.pago, 0) as saldo
+       coalesce(f.receber, 0) - coalesce(p.pago, 0) as saldo
 from (
   select "Pessoa" as pessoa, sum(coalesce("Receber", 0)) as receber
   from public.fluxo_caixa
   where "Pessoa" is not null
   group by "Pessoa"
 ) f
-left join (
+full join (
   select nominal, sum(valor_pago) as pago
   from public.contas_pagas
   where nominal is not null

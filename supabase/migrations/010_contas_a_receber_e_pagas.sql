@@ -93,6 +93,20 @@ alter table public.contas_pagas add constraint contas_pagas_linha_key
 create index if not exists contas_pagas_org_idx on public.contas_pagas (organizacao_id);
 create index if not exists contas_pagas_data_pagamento_idx on public.contas_pagas (data_pagamento);
 
+-- NAO chame isto a cada sincronizacao -- ao contrario de contas_pagar/
+-- contas_a_receber (que sao "estado atual em aberto", entao truncar e
+-- repopular e seguro: o que nao esta mais aberto e pra nao estar na tabela
+-- mesmo), contas_pagas e HISTORICO acumulado. Se o node BUSCAR Contas Pagas
+-- nao devolver todo o historico de pagamentos a cada execucao (so um lote
+-- recente, por exemplo), truncar antes de repopular apagaria o historico
+-- ja acumulado, deixando so o lote mais recente -- perda de dados
+-- silenciosa. O node SALVAR SUPABASE5 deve inserir com
+-- "Prefer: resolution=merge-duplicates" (mesmo header que contas_pagar ja
+-- usa, ver n8n/README-sync.md) SEM um truncate antes -- a constraint unica
+-- acima ja evita duplicar quem reaparecer numa proxima sincronizacao.
+-- Mantenha esta funcao só para um rebuild manual e deliberado (ex: limpar
+-- e reprocessar do zero se descobrir dados errados), nunca ligada ao
+-- AGENDAMENTO do branch.
 create or replace function public.limpar_contas_pagas()
 returns void
 language sql

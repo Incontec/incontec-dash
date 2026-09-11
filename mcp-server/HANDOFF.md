@@ -49,10 +49,19 @@ Preciso que você, com acesso real a esta VPS/n8n/Supabase, faça o seguinte:
    seguindo o guia em `mcp-server/README.md` (seção "Integrando no workflow
    do n8n"): adicionar node MCP Client Tool + AI Agent, remover as buscas
    fixas antigas, testar com perguntas sobre contas a pagar/receber por obra.
-5. Depois de configurar o node **AGENDAMENTO** dos dois branches novos,
-   ligue-os para chamar `rpc/limpar_contas_a_receber` e
-   `rpc/limpar_contas_pagas` antes do BUSCAR, do mesmo jeito que o branch de
-   `contas_pagar` já faz (ver migration 009).
+5. Configure o node **AGENDAMENTO** dos dois branches novos com cuidados
+   diferentes para cada lado -- eles não são simétricos:
+   - **Contas a Receber**: chame `rpc/limpar_contas_a_receber` antes do
+     BUSCAR, igual ao branch de `contas_pagar` (migration 009) -- é estado
+     atual em aberto, truncar e repopular é seguro.
+   - **Contas Pagas**: **NÃO** chame `rpc/limpar_contas_pagas` no ciclo
+     normal -- é histórico acumulado, não estado atual. Configure o node
+     **SALVAR SUPABASE5** para inserir com header
+     `Prefer: resolution=merge-duplicates` (upsert, mesmo padrão de
+     `contas_pagar`) sem truncar antes. Se truncar e o BUSCAR não trouxer
+     todo o histórico de pagamentos a cada execução (só um lote recente),
+     o histórico acumulado seria apagado silenciosamente. Veja o
+     comentário completo em `010_contas_a_receber_e_pagas.sql`.
 6. **Depois que `contas_pagas` estiver populada de verdade**, valide e rode
    `supabase/migrations/011_fluxo_via_pilares.sql` — ela redefine
    `vw_fluxo_obra` e `vw_fluxo_pessoa` pra calcular "pagar" a partir de
